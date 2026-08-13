@@ -1,0 +1,11 @@
+:root {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: darkblue;
+}
+
+#blocklyDiv {
+    height: 600px;
+    width: 100%;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+}
