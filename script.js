@@ -1,6 +1,17 @@
+//קטגוריות
 const toolbox = {
   'kind': 'categoryToolbox',
   'contents': [
+    {
+      'kind': 'category',
+      'name': 'כללי',
+      'colour': '#dfea47',
+      'contents': [
+        { 'kind': 'block', 'type': 'number'},
+        { 'kind': 'block', 'type': 'start'}
+
+      ]
+    },
     {
       'kind': 'category',
       'name': 'לוגיקה',
@@ -8,7 +19,9 @@ const toolbox = {
       'contents': [
         { 'kind': 'block', 'type': 'if_then' },
         { 'kind': 'block', 'type': 'if_then_else'},
-        { 'kind': 'block', 'type': 'logic_compare' }
+        { 'kind': 'block', 'type': 'compare'},
+        { 'kind': 'block', 'type': 'delay'},
+        { 'kind': 'block', 'type': 'repeat'}
         
       ]
     },
@@ -17,37 +30,14 @@ const toolbox = {
       'name': 'מנועים',
       'colour': '#6DA3A4',
       'contents': [
-        { 'kind': 'block', 'type': 'motor_speed' },
-        { 'kind': 'block', 'type': 'motor_on' },
-        { 'kind': 'block', 'type': 'motor_off' },
-        { 'kind': 'block', 'type': 'if_motor_on'}
+
 
       ]
     }
   ]
 };
+//בלוקים
 Blockly.defineBlocksWithJsonArray([
-  {
-  "type": "motor_speed",
-  "tooltip": "",
-  "helpUrl": "",
-  "message0": "קבע מהירות מנוע ל %1 %2",
-  "args0": [
-    {
-      "type": "field_number",
-      "name": "speed",
-      "value": 0,
-      "min": 0
-    },
-    {
-      "type": "input_dummy",
-      "name": "speed"
-    }
-  ],
-  "previousStatement": null,
-  "nextStatement": null,
-  "colour": 165
-},
 {
   "type": "if_then",
   "tooltip": "",
@@ -93,53 +83,132 @@ Blockly.defineBlocksWithJsonArray([
   "colour": 210
 },
 {
-  "type": "motor_on",
+  "type": "compare",
   "tooltip": "",
   "helpUrl": "",
-  "message0": "תפעיל את המנוע %1",
+  "message0": "%1 %2 %3 %4",
   "args0": [
     {
-      "type": "input_dummy",
-      "name": "ON"
-    }
-  ],
-  "previousStatement": null,
-  "nextStatement": null,
-  "colour": 165
-},
-{
-  "type": "motor_off",
-  "tooltip": "",
-  "helpUrl": "",
-  "message0": "תכבה את המנוע %1",
-  "args0": [
+      "type": "input_value",
+      "name": "A"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "NAME",
+      "options": [
+        [
+          "=",
+          "="
+        ],
+        [
+          "<",
+          "<"
+        ],
+        [
+          ">",
+          ">"
+        ]
+      ]
+    },
     {
       "type": "input_dummy",
-      "name": "OFF"
-    }
-  ],
-  "previousStatement": null,
-  "nextStatement": null,
-  "colour": 165
-},
-{
-  "type": "if_motor_on",
-  "tooltip": "",
-  "helpUrl": "",
-  "message0": "המנוע דלוק %1",
-  "args0": [
+      "name": "NAME"
+    },
     {
-      "type": "input_dummy",
-      "name": "OFF"
+      "type": "input_value",
+      "name": "NAME"
     }
   ],
   "output": "Boolean",
-  "colour": 165
+  "colour": 210,
+  "inputsInline": true
+},
+{
+  "type": "number",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "%1 %2",
+  "args0": [
+    {
+      "type": "field_number",
+      "name": "NUMBER",
+      "value": 0
+    },
+    {
+      "type": "input_dummy",
+      "name": "NUMBER"
+    }
+  ],
+  "output": "Number",
+  "colour": 60,
+  "inputsInline": true
+},
+{
+  "type": "start",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "⬇️תתחילו כאן %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "start"
+    }
+  ],
+  "nextStatement": null,
+  "colour": 60,
+  "inputsInline": true
+},
+{
+  "type": "delay",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "חכה %1 שניות %2",
+  "args0": [
+    {
+      "type": "field_input",
+      "name": "DELAY",
+      "text": ""
+    },
+    {
+      "type": "input_dummy",
+      "name": "DELAY"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 210,
+  "inputsInline": true
+},
+{
+  "type": "repeat",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "%1 תחזור על זה %2 ⬆️פעמים %3",
+  "args0": [
+    {
+      "type": "input_statement",
+      "name": "DO"
+    },
+    {
+      "type": "field_input",
+      "name": "REPEAT",
+      "text": ""
+    },
+    {
+      "type": "input_dummy",
+      "name": "REPEAT"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 210
 }
                     
                     
+                    
+                                       
 ]);
-
+//הפעלה
 const workspace = Blockly.inject('blocklyDiv', {
     toolbox: toolbox,
     rtl: true,
@@ -160,3 +229,4 @@ const workspace = Blockly.inject('blocklyDiv', {
     }
     
     });
+    
