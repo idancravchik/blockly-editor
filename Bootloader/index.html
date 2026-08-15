@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>בדיקת חיבור DevboxV1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f6f9;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 6px;
+      background: #e9ecef;
+      font-size: 14px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>בדיקת זיהוי DevboxV1</h2>
+    <p>חבר את הלוח למחשב ב-USB ולחץ על הכפתור לפתיחת חלון ההתקנים:</p>
+    
+    <button id="connectBtn">חבר מכשיר (WebSerial)</button>
+    
+    <div id="status">ממתין ללחיצה...</div>
+  </div>
+
+  <script>
+    const connectBtn = document.getElementById('connectBtn');
+    const statusDiv = document.getElementById('status');
+
+    connectBtn.addEventListener('click', async () => {
+      // בדיקה אם הדפדפן תומך ב-WebSerial
+      if (!("serial" in navigator)) {
+        statusDiv.innerText = "שגיאה: הדפדפן אינו תומך ב-WebSerial (נסה Chrome או Edge).";
+        statusDiv.style.color = "red";
+        return;
+      }
+
+      try {
+        // פקודה זו פותחת את חלון בחירת ההתקנים המובנה של הדפדפן
+        const port = await navigator.serial.requestPort();
+        
+        // קבלת מזהי החומרה שנבחרו (VID ו-PID)
+        const info = port.getInfo();
+        const vid = info.usbVendorId ? "0x" + info.usbVendorId.toString(16).padStart(4, '0') : "לא זוהה";
+        const pid = info.usbProductId ? "0x" + info.usbProductId.toString(16).padStart(4, '0') : "לא זוהה";
+
+        statusDiv.innerHTML = `<strong>התחבר בהצלחה!</strong><br>VID: ${vid}<br>PID: ${pid}`;
+        statusDiv.style.color = "green";
+      } catch (err) {
+        statusDiv.innerText = "החיבור בוטל או נכשל: " + err.message;
+        statusDiv.style.color = "orange";
+      }
+    });
+  </script>
+
+</body>
+</html>
