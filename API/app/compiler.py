@@ -93,17 +93,22 @@ def run_compilation(code: str) -> bytes:
                 status_code=400
             )
 
-        # Search for generated .bin file inside output directory
-        bin_files = list(out_dir.glob("*.bin"))
-        if not bin_files:
-            logger.error(f"[{request_id}] Compilation exit code 0 but no .bin file created in {out_dir}")
-            raise Exception("Compilation reported success, but output binary file (.bin) was not generated.")
+        # Search for generated .bin or .hex file inside output directory
+    bin_files = list(out_dir.glob("*.bin")) + list(out_dir.glob("*.hex")) + list(out_dir.glob("*.cmd"))
+    
+    # If still nothing, grab any file in the output directory that isn't a directory
+    if not bin_files:
+        bin_files = [f for f in out_dir.glob("*") if f.is_file()]
 
-        binary_path = bin_files[0]
-        with open(binary_path, "rb") as f:
-            binary_data = f.read()
+    if not bin_files:
+        logger.error(f"[{request_id}] Compilation exit code 0 but no binary/hex file created in {out_dir}")
+        raise Exception("Compilation reported success, but output binary file was not generated.")
 
-        return binary_data
+    binary_path = bin_files[0]
+    with open(binary_path, "rb") as f:
+        binary_data = f.read()
+
+    return binary_data
 
     finally:
         # Mandatory cleanup block
