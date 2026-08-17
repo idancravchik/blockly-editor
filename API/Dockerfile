@@ -13,9 +13,8 @@ RUN curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/inst
 
 # Configure arduino-cli and pre-install CH55xDuino core package at build time
 RUN arduino-cli config init && \
-    arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/ch55xduino/package_ch55xduino_index.json && \
-    arduino-cli core install CH55xDuino:mcs51 --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/ch55xduino/package_ch55xduino_index.json
-
+    arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/refs/heads/ch55xduino/package_ch55xduino_mcs51_index.json && \
+    arduino-cli core install CH55xDuino:mcs51 --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/refs/heads/ch55xduino/package_ch55xduino_mcs51_index.json
 # Set working directory
 WORKDIR /workspace
 
