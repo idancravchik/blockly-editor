@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 ARDUINO_CLI_PATH = os.getenv("ARDUINO_CLI_PATH", "arduino-cli")
 CH552_FQBN = os.getenv(
     "CH552_FQBN",
-    "CH55xDuino:mcs51:ch552:clock=24,usbsettings=defaultcdc"
+    "CH55xDuino:mcs51:ch552:clock=24internal,usb_settings=usbcdc"
 )
 COMPILATION_TIMEOUT_SECONDS = float(os.getenv("COMPILATION_TIMEOUT_SECONDS", "5.0"))
 
