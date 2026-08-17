@@ -1,0 +1,48 @@
+# Python / Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+*.venv
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Pytest & Testing Cache
+.pytest_cache/
+.coverage
+htmlcov/
+.nox/
+.tox/
+
+# Compiled Binary & Temporary Build Artifacts
+*.bin
+*.hex
+*.elf
+*.o
+*.a
+out/
+tmp/
+temp/
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
