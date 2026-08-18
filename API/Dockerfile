@@ -31,7 +31,6 @@ EXPOSE 8000
 # Set default runtime environment variables
 ENV PYTHONUNBUFFERED=1
 ENV ARDUINO_CLI_PATH=/usr/local/bin/arduino-cli
-ENV CH552_FQBN=CH55xDuino:mcs51:ch552:clock=24,usbsettings=defaultcdc
 ENV COMPILATION_TIMEOUT_SECONDS=5.0
 
 # Start Uvicorn server

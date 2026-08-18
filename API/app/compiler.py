@@ -14,7 +14,7 @@ CH552_FQBN = os.getenv(
     "CH552_FQBN",
     "CH55xDuino:mcs51:ch552:clock=24internal,usb_settings=usbcdc"
 )
-COMPILATION_TIMEOUT_SECONDS = float(os.getenv("COMPILATION_TIMEOUT_SECONDS", "5.0"))
+COMPILATION_TIMEOUT_SECONDS = float(os.getenv("COMPILATION_TIMEOUT_SECONDS", "60.0"))
 
 
 class CompilationException(Exception):
@@ -37,16 +37,15 @@ def run_compilation(code: str) -> bytes:
     Compiles Arduino C/C++ source code targeting the CH552 microcontroller using arduino-cli.
     
     Returns:
-        bytes: The binary raw bytes of the generated .bin file.
+        bytes: The binary raw bytes of the generated binary/hex file.
         
     Raises:
         CompilationException: If compilation fails (exit code != 0).
-        TimeoutException: If compilation takes longer than 5 seconds.
+        TimeoutException: If compilation takes longer than timeout limit.
         Exception: For unexpected file system or execution failures.
     """
     request_id = str(uuid.uuid4())
     
-    # Determine temp base dir, prioritizing /tmp if accessible, else default OS temp
     base_tmp_str = os.getenv("TMPDIR") or ("/tmp" if os.path.exists("/tmp") else tempfile.gettempdir())
     base_tmp = Path(base_tmp_str)
     
@@ -93,11 +92,16 @@ def run_compilation(code: str) -> bytes:
                 status_code=400
             )
 
-        # Search for generated .bin file inside output directory
-        bin_files = list(out_dir.glob("*.bin"))
+        # Search for generated .bin, .hex, or any other output file inside output directory
+        bin_files = list(out_dir.glob("*.bin")) + list(out_dir.glob("*.hex")) + list(out_dir.glob("*.cmd"))
+        
+        # Fallback to any generated file that is not a directory
         if not bin_files:
-            logger.error(f"[{request_id}] Compilation exit code 0 but no .bin file created in {out_dir}")
-            raise Exception("Compilation reported success, but output binary file (.bin) was not generated.")
+            bin_files = [f for f in out_dir.glob("*") if f.is_file()]
+
+        if not bin_files:
+            logger.error(f"[{request_id}] Compilation exit code 0 but no binary/hex file created in {out_dir}")
+            raise Exception("Compilation reported success, but output binary file was not generated.")
 
         binary_path = bin_files[0]
         with open(binary_path, "rb") as f:
@@ -106,7 +110,7 @@ def run_compilation(code: str) -> bytes:
         return binary_data
 
     finally:
-        # Mandatory cleanup block
+        # Cleanup temporary workspace
         if work_dir.exists():
             try:
                 shutil.rmtree(work_dir, ignore_errors=True)
