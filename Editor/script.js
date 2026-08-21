@@ -8,6 +8,9 @@ const toolbox = {
       'name': 'זמזם',
       'colour': 15,
       'contents': [
+        { 'kind': 'block', 'type': 'bz_on'},
+        { 'kind': 'block', 'type': 'bz_off'},
+        { 'kind': 'block', 'type': 'bz_sound'}
 
       ]
     },
@@ -19,7 +22,8 @@ const toolbox = {
       'contents': [
         { 'kind': 'block', 'type': 'start'},
         { 'kind': 'block', 'type': 'number'},
-        { 'kind': 'block', 'type': 'compare'}
+        { 'kind': 'block', 'type': 'compare'},
+        { 'kind': 'block', 'type': 'delay'},
 
       ]
     },
@@ -56,10 +60,20 @@ const toolbox = {
       'contents': [
         { 'kind': 'block', 'type': 'if_then' },
         { 'kind': 'block', 'type': 'if_then_else'},
-        { 'kind': 'block', 'type': 'delay'},
         { 'kind': 'block', 'type': 'repeat'},
         { 'kind': 'block', 'type': 'loop'}
         
+      ]
+    },
+    //מזג אוויר
+    {
+      'kind': 'category',
+      'name': 'מזג אוויר',
+      'colour': 225, // צבע הקטגוריה בתפריט
+      'contents': [
+        { 'kind': 'block', 'type': 'temperature' },
+        { 'kind': 'block', 'type': 'humidity'},
+
       ]
     }
 
@@ -148,8 +162,8 @@ Blockly.defineBlocksWithJsonArray([
       "name": "NAME"
     },
     {
-      "type": "input_value",
-      "name": "NAME"
+      "type": "field_number",
+      "name": "B"
     }
   ],
   "output": "Boolean",
@@ -182,16 +196,67 @@ Blockly.defineBlocksWithJsonArray([
   "type": "start",
   "tooltip": "",
   "helpUrl": "",
-  "message0": "⬇️תתחילו כאן %1",
+  "message0": "התחל כאן ⬇️ חיבור 1️⃣ %1 חיבור 2️⃣ %2 %3",
   "args0": [
     {
+      "type": "field_dropdown",
+      "name": "PORT1",
+      "options": [
+        [
+          "כלום ❌",
+          "NONE"
+        ],
+        [
+          "מנוע 🔁",
+          "SERVO"
+        ],
+        [
+          "כפתור ▶️",
+          "BUTTON"
+        ],
+        [
+          "זמזם 🔊",
+          "BUZZER"
+        ],
+        [
+          "חיישן מזג אוויר 🌦️",
+          "TEMPHUM"
+        ]
+      ]
+    },
+    {
+      "type": "field_dropdown",
+      "name": "PORT2",
+      "options": [
+        [
+          "כלום ❌",
+          "NONE"
+        ],
+        [
+          "מנוע 🔁",
+          "SERVO"
+        ],
+        [
+          "כפתור ▶️",
+          "BUTTON"
+        ],
+        [
+          "זמזם 🔊",
+          "BUZZER"
+        ],
+        [
+          "חיישן מזג אוויר 🌦️",
+          "TEMPHUM"
+        ]
+      ]
+    },
+    {
       "type": "input_dummy",
-      "name": "start"
+      "name": "PORTS"
     }
   ],
   "nextStatement": null,
-  "colour": 60,
-  "inputsInline": true
+  "colour": 60
 },
 //delay
 {
@@ -212,7 +277,7 @@ Blockly.defineBlocksWithJsonArray([
   ],
   "previousStatement": null,
   "nextStatement": null,
-  "colour": 210,
+  "colour": 60,
   "inputsInline": true
 },
 //repeat
@@ -401,35 +466,111 @@ Blockly.defineBlocksWithJsonArray([
   ],
   "output": "Boolean",
   "colour": 120
+},
+//bz_on
+{
+  "type": "bz_on",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "תפעיל את הזמזם %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "DELAY"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 15
+},
+//bz_off
+{
+  "type": "bz_off",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "תכבה את הזמזם %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "BZ"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 15
+},
+//bz_sound
+{
+  "type": "bz_sound",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "הפעל צליל של %1 %2",
+  "args0": [
+    {
+      "type": "field_dropdown",
+      "name": "TYPE",
+      "options": [
+        [
+          "⏰התראה",
+          "alarm"
+        ],
+        [
+          "🚨אזעקה",
+          "siren"
+        ],
+        [
+          "🥳יום הולדת",
+          "birthday"
+        ],
+        [
+          "🏆ניצחון",
+          "success"
+        ]
+      ]
+    },
+    {
+      "type": "input_dummy",
+      "name": "BZ"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 15
+},
+//temperature
+{
+  "type": "temperature",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "טמפרטורה נוכחית %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "TEMP"
+    }
+  ],
+  "output": "Number",
+  "colour": 225
+},
+//לחות
+{
+  "type": "humidity",
+  "tooltip": "",
+  "helpUrl": "",
+  "message0": "לחות נוכחית %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "HUM"
+    }
+  ],
+  "output": "Number",
+  "colour": 225
 }
-
+                    
+                    
+                    
 ]);
-
-
-javascript.javascriptGenerator.forBlock['delay'] = function(block, generator) {
-  const text_delay = block.getFieldValue('DELAY');
-
-  // TODO: Assemble javascript into the code variable.
-  const code = 'delay(' + text_delay + ');\n';
-  return code;
-}
-
-javascript.javascriptGenerator.forBlock['if_then'] = function(block, generator) {
-  const condition = generator.valueToCode(block, 'Condition', javascript.javascriptGenerator.ORDER_NONE) || 'false';
-  const doCode = generator.statementToCode(block, 'DO');
-  const code = 'if (' + condition + ') {\n' + doCode + '}\n';
-  return code;
-};
-
-javascript.javascriptGenerator.forBlock['if_then_else'] = function(block, generator) {
-  const condition = generator.valueToCode(block, 'IF', javascript.javascriptGenerator.ORDER_NONE) || 'false';
-  const doCode = generator.statementToCode(block, 'DO');
-  const elseCode = generator.statementToCode(block, 'ELSE');
-  const code = 'if (' + condition + ') {\n' + doCode + '} else {\n' + elseCode + '}\n';
-  return code;
-};
-
-
 
 //הפעלה
 const workspace = Blockly.inject('blocklyDiv', {
@@ -451,8 +592,13 @@ const workspace = Blockly.inject('blocklyDiv', {
     snap: true         // מנחית בלוקים על נקודות הרשת
     }
     
-    });
-
+});
+const startBlock = workspace.newBlock('start');
+startBlock.initSvg();
+startBlock.render();
+workspace.centerOnBlock(startBlock.id);
+startBlock.moveBy(0, -200);
+startBlock.setDeletable(false);
 function updateCodeLive() {
   const code = javascript.javascriptGenerator.workspaceToCode(workspace);
   const outputElement = document.getElementById('codeOutput');
@@ -460,7 +606,5 @@ function updateCodeLive() {
     outputElement.innerText = code || '// גרור בלוקים למסך...';
   }
 }
-
 workspace.addChangeListener(updateCodeLive);
-
 updateCodeLive();
