@@ -14,6 +14,7 @@
     button:hover { background: #0056b3; }
     button:disabled { background: #555; cursor: not-allowed; }
   </style>
+  <script src="ch55xbl.js"></script>
 </head>
 <body>
 
@@ -45,34 +46,27 @@ void loop() {
       consoleEl.scrollTop = consoleEl.scrollHeight;
     }
 
+    // הפניית חיוויי הפלאשר מהספרייה ללוג היעודי
+    statusDiv = {
+      set innerHTML(msg) {
+        log("[WebUSB Flasher] " + msg);
+      }
+    };
+
     uploadBtn.addEventListener('click', async () => {
       const code = codeEl.value.trim();
       if (!code) return log("No code entered.");
 
-      // הקפצת תפריט הבחירה של הדפדפן ישירות בעת לחיצת המשתמש (לפני ה-fetch השהייתי)
-      let serialPort = null;
-      if ("serial" in navigator) {
-        try {
-          const ports = await navigator.serial.getPorts();
-          if (ports.length > 0) {
-            serialPort = ports[0];
-          } else {
-            serialPort = await navigator.serial.requestPort();
-          }
-        } catch (err) {
-          log("Serial Permission Note: " + err.message);
-        }
-      }
-
       uploadBtn.disabled = true;
       consoleEl.textContent = "Compiling...";
 
+      // 1. קומפילציה מול ה-API
       const endpoints = [
         'http://localhost:8000/compile',
         'https://web-compiler-api.onrender.com/compile'
       ];
 
-      let blob = null;
+      let arrayBuffer = null;
       for (const ep of endpoints) {
         try {
           log("Connecting to " + ep + "...");
@@ -83,8 +77,8 @@ void loop() {
           });
 
           if (res.ok) {
-            blob = await res.blob();
-            log("Success!");
+            arrayBuffer = await res.arrayBuffer();
+            log("Compilation Success!");
             break;
           } else {
             const errText = await res.text();
@@ -102,29 +96,46 @@ void loop() {
         }
       }
 
-      if (blob) {
-        if (serialPort) {
-          try {
-            log("Sending 1200-baud reset to enter Bootloader...");
-            await serialPort.open({ baudRate: 1200 });
-            await new Promise(r => setTimeout(r, 150));
-            await serialPort.close();
-            log("Board reset to Bootloader mode!");
-          } catch (err) {
-            log("Serial Reset Note: " + err.message);
-          }
-        }
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'firmware.bin';
-        a.click();
-        URL.revokeObjectURL(url);
-        log("✅ הקובץ firmware.bin הורד בהצלחה למחשב!");
-        log("💡 הלוח נמצא כעת במצב Bootloader ומוכן לצריבה (באמצעות תוכנת צריבה כגון WCHISPTool או ch552tool).");
-      } else {
+      if (!arrayBuffer) {
         log("❌ לא ניתן להתחבר לשרת הקומפילציה.");
+        uploadBtn.disabled = false;
+        return;
+      }
+
+      const binBytes = new Uint8Array(arrayBuffer);
+
+      // 2. ניסיון איפוס 1200-baud בסריאל אם הלוח פועל במצב CDC
+      if ("serial" in navigator) {
+        try {
+          const ports = await navigator.serial.getPorts();
+          if (ports.length > 0) {
+            log("Sending 1200-baud reset signal via Serial...");
+            const port = ports[0];
+            await port.open({ baudRate: 1200 });
+            await new Promise(r => setTimeout(r, 150));
+            await port.close().catch(() => {});
+            log("Serial reset sent. Waiting for USB Bootloader mode...");
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        } catch (err) {
+          log("Serial Reset Note: " + err.message);
+        }
+      }
+
+      // 3. צריבה ישירה לזיכרון ה-Flash של CH552 דרך WebUSB
+      try {
+        log("Connecting to CH552 Bootloader via WebUSB...");
+        await connectCH55xBootloader();
+
+        if (bootloaderUploadReady) {
+          log("Flashing binary directly into CH552 flash memory...");
+          await uploadCH55xBootloader(binBytes);
+          log("🎉 הצריבה הושלמה בהצלחה! הקוד הותקן ורץ כעת בלוח.");
+        } else {
+          log("❌ הלוח לא נמצא במצב Bootloader. ודא כי הלוח במצב צריבה.");
+        }
+      } catch (err) {
+        log("WebUSB Flashing Error: " + err.message);
       }
 
       uploadBtn.disabled = false;
