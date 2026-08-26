@@ -430,12 +430,17 @@ document.addEventListener('DOMContentLoaded', function () {
     let connectButton = document.querySelector('#connect');
     let uploadButton = document.querySelector('#upload');
     let dropZoneDiv = document.querySelector('#drop_zone');
-    statusDiv = document.querySelector('#status');
+    let fileIdEl = document.getElementById('fileid');
 
-    connectButton.addEventListener('click', connectCH55xBootloader);
-    uploadButton.addEventListener('click', pressUpload);
-    dropZoneDiv.addEventListener('drop', dropHandler, false);
-    dropZoneDiv.addEventListener('dragover', dragOverHandler, false)
+    if (connectButton) connectButton.addEventListener('click', connectCH55xBootloader);
+    if (uploadButton) uploadButton.addEventListener('click', pressUpload);
+    if (dropZoneDiv) {
+        dropZoneDiv.addEventListener('drop', dropHandler, false);
+        dropZoneDiv.addEventListener('dragover', dragOverHandler, false);
+    }
+    if (fileIdEl) fileIdEl.addEventListener('change', handleFileSelect, false);
 
-    document.getElementById('fileid').addEventListener('change', handleFileSelect, false);
+    if (document.querySelector('#status')) {
+        statusDiv = document.querySelector('#status');
+    }
 }, false);

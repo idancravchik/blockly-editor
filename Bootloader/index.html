@@ -46,10 +46,12 @@ void loop() {
       consoleEl.scrollTop = consoleEl.scrollHeight;
     }
 
-    // הפניית חיוויי הפלאשר מהספרייה ללוג היעודי
-    statusDiv = {
+    window.statusDiv = {
       set innerHTML(msg) {
         log("[WebUSB Flasher] " + msg);
+      },
+      get innerHTML() {
+        return "";
       }
     };
 
@@ -57,10 +59,24 @@ void loop() {
       const code = codeEl.value.trim();
       if (!code) return log("No code entered.");
 
+      // 1. קבלת הרשאת יציאת טורית בלחיצת המשתמש במידת הצורך
+      let serialPorts = [];
+      if ("serial" in navigator) {
+        try {
+          serialPorts = await navigator.serial.getPorts();
+          if (serialPorts.length === 0) {
+            try {
+              const p = await navigator.serial.requestPort();
+              serialPorts = [p];
+            } catch (e) {}
+          }
+        } catch (e) {}
+      }
+
       uploadBtn.disabled = true;
       consoleEl.textContent = "Compiling...";
 
-      // 1. קומפילציה מול ה-API
+      // 2. קומפילציה מול ה-API
       const endpoints = [
         'http://localhost:8000/compile',
         'https://web-compiler-api.onrender.com/compile'
@@ -104,19 +120,19 @@ void loop() {
 
       const binBytes = new Uint8Array(arrayBuffer);
 
-      // 2. ניסיון איפוס 1200-baud בסריאל אם הלוח פועל במצב CDC
-      if ("serial" in navigator) {
+      // 3. ניסיון איפוס 1200-baud בסריאל להעברת הבקר למצב Bootloader
+      if (serialPorts.length > 0) {
         try {
-          const ports = await navigator.serial.getPorts();
-          if (ports.length > 0) {
-            log("Sending 1200-baud reset signal via Serial...");
-            const port = ports[0];
-            await port.open({ baudRate: 1200 });
-            await new Promise(r => setTimeout(r, 150));
+          log("Sending 1200-baud reset signal via Serial...");
+          const port = serialPorts[0];
+          if (port.readable || port.writable) {
             await port.close().catch(() => {});
-            log("Serial reset sent. Waiting for USB Bootloader mode...");
-            await new Promise(r => setTimeout(r, 1000));
           }
+          await port.open({ baudRate: 1200 });
+          await new Promise(r => setTimeout(r, 150));
+          await port.close().catch(() => {});
+          log("Serial reset sent. Waiting for USB Bootloader mode...");
+          await new Promise(r => setTimeout(r, 1000));
         } catch (err) {
           log("Serial Reset Note: " + err.message);
         }
