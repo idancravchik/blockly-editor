@@ -45,23 +45,24 @@ void loop() {
       consoleEl.scrollTop = consoleEl.scrollHeight;
     }
 
-    async function trigger1200BaudReset() {
-      if (!("serial" in navigator)) return;
-      try {
-        log("Sending 1200-baud reset to enter Bootloader...");
-        const port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 1200 });
-        await new Promise(r => setTimeout(r, 150));
-        await port.close();
-        log("Board reset to Bootloader mode!");
-      } catch (err) {
-        log("Serial Reset Note: " + err.message);
-      }
-    }
-
     uploadBtn.addEventListener('click', async () => {
       const code = codeEl.value.trim();
       if (!code) return log("No code entered.");
+
+      // הקפצת תפריט הבחירה של הדפדפן ישירות בעת לחיצת המשתמש (לפני ה-fetch השהייתי)
+      let serialPort = null;
+      if ("serial" in navigator) {
+        try {
+          const ports = await navigator.serial.getPorts();
+          if (ports.length > 0) {
+            serialPort = ports[0];
+          } else {
+            serialPort = await navigator.serial.requestPort();
+          }
+        } catch (err) {
+          log("Serial Permission Note: " + err.message);
+        }
+      }
 
       uploadBtn.disabled = true;
       consoleEl.textContent = "Compiling...";
@@ -75,7 +76,6 @@ void loop() {
       for (const ep of endpoints) {
         try {
           log("Connecting to " + ep + "...");
-          // שימוש ב-text/plain כדי למנוע חסימות CORS Preflight (OPTIONS) בפתיחה כ-file://
           const res = await fetch(ep, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -103,7 +103,17 @@ void loop() {
       }
 
       if (blob) {
-        await trigger1200BaudReset();
+        if (serialPort) {
+          try {
+            log("Sending 1200-baud reset to enter Bootloader...");
+            await serialPort.open({ baudRate: 1200 });
+            await new Promise(r => setTimeout(r, 150));
+            await serialPort.close();
+            log("Board reset to Bootloader mode!");
+          } catch (err) {
+            log("Serial Reset Note: " + err.message);
+          }
+        }
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -114,7 +124,6 @@ void loop() {
         log("Downloaded firmware.bin");
       } else {
         log("❌ לא ניתן להתחבר לשרת הקומפילציה.");
-        log("טיפ: אם ה-API המקומי לא רץ ב-localhost:8000, ודא הפעלה של שרת ה-API (uvicorn) או המתן להתעוררות שרת הענן (Render).");
       }
 
       uploadBtn.disabled = false;
