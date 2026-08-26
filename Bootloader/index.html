@@ -121,7 +121,8 @@ void loop() {
         a.download = 'firmware.bin';
         a.click();
         URL.revokeObjectURL(url);
-        log("Downloaded firmware.bin");
+        log("✅ הקובץ firmware.bin הורד בהצלחה למחשב!");
+        log("💡 הלוח נמצא כעת במצב Bootloader ומוכן לצריבה (באמצעות תוכנת צריבה כגון WCHISPTool או ch552tool).");
       } else {
         log("❌ לא ניתן להתחבר לשרת הקומפילציה.");
       }
