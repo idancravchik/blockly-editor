@@ -2,89 +2,122 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>בדיקת חיבור DevboxV1</title>
+  <title>העלאת קוד</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background-color: #f4f6f9;
-    }
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: center;
-      max-width: 420px;
-      width: 90%;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.2s;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #status {
-      margin-top: 20px;
-      padding: 12px;
-      border-radius: 6px;
-      background: #e9ecef;
-      font-size: 14px;
-      word-break: break-all;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100vh; display: flex; flex-direction: column; font-family: monospace; }
+    .main { display: flex; flex: 1; width: 100%; height: calc(100vh - 60px); }
+    textarea { flex: 1; height: 100%; padding: 10px; font-family: monospace; font-size: 14px; background: #1e1e1e; color: #fff; border: none; resize: none; direction: ltr; outline: none; }
+    .console { flex: 1; height: 100%; padding: 10px; background: #000; color: #0f0; font-family: monospace; font-size: 14px; overflow-y: auto; direction: ltr; white-space: pre-wrap; border-right: 1px solid #333; }
+    .footer { height: 60px; display: flex; align-items: center; justify-content: center; background: #222; }
+    button { padding: 12px 40px; font-size: 18px; font-weight: bold; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    button:disabled { background: #555; cursor: not-allowed; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>בדיקת זיהוי DevboxV1</h2>
-    <p>חבר את הלוח למחשב ב-USB ולחץ על הכפתור לפתיחת חלון ההתקנים:</p>
-    
-    <button id="connectBtn">חבר מכשיר (WebSerial)</button>
-    
-    <div id="status">ממתין ללחיצה...</div>
+  <div class="main">
+    <textarea id="code" spellcheck="false">void setup() {
+  pinMode(33, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(33, HIGH);
+  delay(500);
+  digitalWrite(33, LOW);
+  delay(500);
+}</textarea>
+    <div id="console" class="console">Ready...</div>
+  </div>
+
+  <div class="footer">
+    <button id="uploadBtn">העלה</button>
   </div>
 
   <script>
-    const connectBtn = document.getElementById('connectBtn');
-    const statusDiv = document.getElementById('status');
+    const codeEl = document.getElementById('code');
+    const consoleEl = document.getElementById('console');
+    const uploadBtn = document.getElementById('uploadBtn');
 
-    connectBtn.addEventListener('click', async () => {
-      // בדיקה אם הדפדפן תומך ב-WebSerial
-      if (!("serial" in navigator)) {
-        statusDiv.innerText = "שגיאה: הדפדפן אינו תומך ב-WebSerial (נסה Chrome או Edge).";
-        statusDiv.style.color = "red";
-        return;
-      }
+    function log(msg) {
+      consoleEl.textContent += '\n' + msg;
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
 
+    async function trigger1200BaudReset() {
+      if (!("serial" in navigator)) return;
       try {
-        // פקודה זו פותחת את חלון בחירת ההתקנים המובנה של הדפדפן
+        log("Sending 1200-baud reset to enter Bootloader...");
         const port = await navigator.serial.requestPort();
-        
-        // קבלת מזהי החומרה שנבחרו (VID ו-PID)
-        const info = port.getInfo();
-        const vid = info.usbVendorId ? "0x" + info.usbVendorId.toString(16).padStart(4, '0') : "לא זוהה";
-        const pid = info.usbProductId ? "0x" + info.usbProductId.toString(16).padStart(4, '0') : "לא זוהה";
-
-        statusDiv.innerHTML = `<strong>התחבר בהצלחה!</strong><br>VID: ${vid}<br>PID: ${pid}`;
-        statusDiv.style.color = "green";
+        await port.open({ baudRate: 1200 });
+        await new Promise(r => setTimeout(r, 150));
+        await port.close();
+        log("Board reset to Bootloader mode!");
       } catch (err) {
-        statusDiv.innerText = "החיבור בוטל או נכשל: " + err.message;
-        statusDiv.style.color = "orange";
+        log("Serial Reset Note: " + err.message);
       }
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      const code = codeEl.value.trim();
+      if (!code) return log("No code entered.");
+
+      uploadBtn.disabled = true;
+      consoleEl.textContent = "Compiling...";
+
+      const endpoints = [
+        'http://localhost:8000/compile',
+        'https://web-compiler-api.onrender.com/compile'
+      ];
+
+      let blob = null;
+      for (const ep of endpoints) {
+        try {
+          log("Connecting to " + ep + "...");
+          // שימוש ב-text/plain כדי למנוע חסימות CORS Preflight (OPTIONS) בפתיחה כ-file://
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ code })
+          });
+
+          if (res.ok) {
+            blob = await res.blob();
+            log("Success!");
+            break;
+          } else {
+            const errText = await res.text();
+            let errMsg = errText;
+            try {
+              const errJson = JSON.parse(errText);
+              errMsg = errJson.errors || errJson.message || errJson.detail || errText;
+            } catch(e) {}
+            log("Error:\n" + errMsg);
+            uploadBtn.disabled = false;
+            return;
+          }
+        } catch (e) {
+          log("Failed to reach " + ep + ": " + e.message);
+        }
+      }
+
+      if (blob) {
+        await trigger1200BaudReset();
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'firmware.bin';
+        a.click();
+        URL.revokeObjectURL(url);
+        log("Downloaded firmware.bin");
+      } else {
+        log("❌ לא ניתן להתחבר לשרת הקומפילציה.");
+        log("טיפ: אם ה-API המקומי לא רץ ב-localhost:8000, ודא הפעלה של שרת ה-API (uvicorn) או המתן להתעוררות שרת הענן (Render).");
+      }
+
+      uploadBtn.disabled = false;
     });
   </script>
 

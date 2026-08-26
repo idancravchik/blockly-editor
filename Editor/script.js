@@ -72,11 +72,22 @@ const toolbox = {
       'colour': 225, // צבע הקטגוריה בתפריט
       'contents': [
         { 'kind': 'block', 'type': 'temperature' },
-        { 'kind': 'block', 'type': 'humidity'},
-
+        { 'kind': 'block', 'type': 'humidity'}
+      ]
+    },
+    //סריאל (דיבאג)
+    {
+      'kind': 'category',
+      'name': 'סריאל (דיבאג)',
+      'colour': 280,
+      'contents': [
+        { 'kind': 'block', 'type': 'serial_println'},
+        { 'kind': 'block', 'type': 'serial_print'},
+        { 'kind': 'block', 'type': 'text'},
+        { 'kind': 'block', 'type': 'serial_read'},
+        { 'kind': 'block', 'type': 'serial_available'}
       ]
     }
-
   ]
 };
 
@@ -564,12 +575,100 @@ Blockly.defineBlocksWithJsonArray([
       "name": "HUM"
     }
   ],
-  "output": "Number",
-  "colour": 225
+},
+//serial_println
+{
+  "type": "serial_println",
+  "tooltip": "מדפיס ערך או שורה לסריאל",
+  "helpUrl": "",
+  "message0": "הדפס שורה לסריאל 📄 %1 %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "TEXT"
+    },
+    {
+      "type": "input_dummy",
+      "name": "DUMMY"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 280,
+  "inputsInline": true
+},
+//serial_print
+{
+  "type": "serial_print",
+  "tooltip": "מדפיס ערך או טקסט לסריאל",
+  "helpUrl": "",
+  "message0": "הדפס לסריאל 💬 %1 %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "TEXT"
+    },
+    {
+      "type": "input_dummy",
+      "name": "DUMMY"
+    }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 280,
+  "inputsInline": true
+},
+//text
+{
+  "type": "text",
+  "tooltip": "טקסט חופשי",
+  "helpUrl": "",
+  "message0": "טקסט %1 %2",
+  "args0": [
+    {
+      "type": "field_input",
+      "name": "TEXT",
+      "text": "שלום"
+    },
+    {
+      "type": "input_dummy",
+      "name": "DUMMY"
+    }
+  ],
+  "output": "String",
+  "colour": 280,
+  "inputsInline": true
+},
+//serial_read
+{
+  "type": "serial_read",
+  "tooltip": "קורא תו מהסריאל",
+  "helpUrl": "",
+  "message0": "קרא תו מהסריאל 📥 %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "READ"
+    }
+  ],
+  "output": "String",
+  "colour": 280
+},
+//serial_available
+{
+  "type": "serial_available",
+  "tooltip": "בודק אם יש מידע בסריאל",
+  "helpUrl": "",
+  "message0": "יש מידע בסריאל? 🔍 %1",
+  "args0": [
+    {
+      "type": "input_dummy",
+      "name": "AVAIL"
+    }
+  ],
+  "output": "Boolean",
+  "colour": 280
 }
-                    
-                    
-                    
 ]);
 
 //הפעלה
@@ -593,12 +692,15 @@ const workspace = Blockly.inject('blocklyDiv', {
     }
     
 });
+
 const startBlock = workspace.newBlock('start');
 startBlock.initSvg();
 startBlock.render();
 workspace.centerOnBlock(startBlock.id);
 startBlock.moveBy(0, -200);
 startBlock.setDeletable(false);
+
+// פעולות ניהול גנרטורים
 function updateCodeLive() {
   const code = javascript.javascriptGenerator.workspaceToCode(workspace);
   const outputElement = document.getElementById('codeOutput');
@@ -606,5 +708,30 @@ function updateCodeLive() {
     outputElement.innerText = code || '// גרור בלוקים למסך...';
   }
 }
+javascript.javascriptGenerator.init = function(workspace) {
+  javascript.javascriptGenerator.definitions_ = Object.create(null);
+  javascript.javascriptGenerator.setups_ = Object.create(null);
+};
+
+// בונה את השלד הסופי
+javascript.javascriptGenerator.finish = function(code) {
+  const defines = Object.values(javascript.javascriptGenerator.definitions_).join('\n');
+  const setups = Object.values(javascript.javascriptGenerator.setups_).join('\n  ');
+
+  return `// === הגדרות ראש ===
+${defines}
+
+// === פעולת Setup ===
+void student_setup() {
+  ${setups}
+}
+
+// === פעולת Loop ===
+void student_loop() {
+${javascript.javascriptGenerator.prefixLines(code, '  ')}
+}
+`;
+};
+
 workspace.addChangeListener(updateCodeLive);
 updateCodeLive();

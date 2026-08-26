@@ -58,6 +58,10 @@ def run_compilation(code: str) -> bytes:
         sketch_dir.mkdir(parents=True, exist_ok=True)
         out_dir.mkdir(parents=True, exist_ok=True)
 
+        # אם הקוד מכיל student_setup אך לא מכיל void setup, נזריק עטיפה אוטומטית ל-setup ו-loop
+        if "student_setup" in code and "void setup" not in code:
+            code += "\n\nvoid setup() {\n  student_setup();\n}\n\nvoid loop() {\n  student_loop();\n}\n"
+
         with open(sketch_file, "w", encoding="utf-8") as f:
             f.write(code)
 

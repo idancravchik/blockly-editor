@@ -2,6 +2,7 @@ import logging
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from app.schemas import CompileRequest, CompileErrorResponse, ServerErrorResponse
 from app.compiler import run_compilation, CompilationException, TimeoutException
 
@@ -16,6 +17,14 @@ app = FastAPI(
     title="CH552 Build Microservice",
     description="Stateless microservice to compile C/Arduino C++ code for CH552 microcontrollers.",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -96,14 +105,44 @@ async def health_check():
         500: {"model": ServerErrorResponse, "description": "Server or timeout error"}
     }
 )
-async def compile_code(payload: CompileRequest):
+async def compile_code(request: Request):
     """
     Compiles Arduino C/C++ source code for CH552 microcontroller.
-    
-    On success: returns HTTP 200 with octet-stream bytes of firmware.bin.
-    On compilation error: returns HTTP 400 JSON.
+    Supports both application/json and text/plain payloads (to prevent CORS preflight issues).
     """
-    binary_bytes = run_compilation(payload.code)
+    content_type = request.headers.get("content-type", "")
+    code = ""
+
+    if "application/json" in content_type:
+        try:
+            body = await request.json()
+            code = body.get("code", "") if isinstance(body, dict) else ""
+        except Exception:
+            code = ""
+    else:
+        body_bytes = await request.body()
+        body_str = body_bytes.decode("utf-8", errors="ignore").strip()
+        if body_str.startswith("{") and '"code"' in body_str:
+            import json
+            try:
+                data = json.loads(body_str)
+                code = data.get("code", "")
+            except Exception:
+                code = body_str
+        else:
+            code = body_str
+
+    if not code or not code.strip():
+        return JSONResponse(
+            status_code=422,
+            content={
+                "status": "error",
+                "message": "Invalid input",
+                "detail": "Field 'code' is empty or missing."
+            }
+        )
+
+    binary_bytes = run_compilation(code)
     
     return Response(
         content=binary_bytes,
