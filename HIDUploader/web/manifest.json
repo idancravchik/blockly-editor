@@ -1,0 +1,9 @@
+{
+  "name": "CH552 Driverless HID Flasher",
+  "short_name": "CH552 Flasher",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "description": "Flash CH55xduino microcontrollers from any phone or browser via USB HID"
+}

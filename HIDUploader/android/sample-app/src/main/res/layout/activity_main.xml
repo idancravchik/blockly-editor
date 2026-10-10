@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#0D1117">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚡ CH552 Driverless Flasher"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="USB HID Mobile Programmer (Java)"
+        android:textColor="#8B949E"
+        android:textSize="14sp"
+        android:layout_marginBottom="28dp"/>
+
+    <!-- Test Button A -->
+    <Button
+        android:id="@+id/btnSendA"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:text="Flash: Serial Send 'A' Every 1s"
+        android:textAllCaps="false"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:backgroundTint="#2EA043"
+        android:layout_marginBottom="14dp"/>
+
+    <!-- Test Button B -->
+    <Button
+        android:id="@+id/btnSendB"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:text="Flash: Serial Send 'B' Every 1s"
+        android:textAllCaps="false"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:backgroundTint="#1F6FEB"
+        android:layout_marginBottom="24dp"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="14dp"
+        android:max="100"
+        android:progress="0"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connect CH552 board to phone via USB-C / OTG adapter"
+        android:textColor="#58A6FF"
+        android:textSize="14sp"
+        android:gravity="center"/>
+
+</LinearLayout>

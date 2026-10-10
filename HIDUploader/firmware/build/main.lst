@@ -1,0 +1,1054 @@
+                                      1 ;--------------------------------------------------------
+                                      2 ; File Created by SDCC : free open source ISO C Compiler
+                                      3 ; Version 4.6.0 #16555 (MINGW64)
+                                      4 ;--------------------------------------------------------
+                                      5 	.module main
+                                      6 	
+                                      7 	.optsdcc -mmcs51 --model-small
+                                      8 ;--------------------------------------------------------
+                                      9 ; Public variables in this module
+                                     10 ;--------------------------------------------------------
+                                     11 	.globl _main
+                                     12 	.globl _memset
+                                     13 	.globl _IAP_CalculateCRC16
+                                     14 	.globl _IAP_ReadWord
+                                     15 	.globl _IAP_WriteWord
+                                     16 	.globl _USB_Shutdown
+                                     17 	.globl _USB_SendReport
+                                     18 	.globl _USB_ReleaseRx
+                                     19 	.globl _USB_GetRxBuffer
+                                     20 	.globl _USB_Available
+                                     21 	.globl _USB_Process
+                                     22 	.globl _USB_Init
+                                     23 	.globl _P1_7
+                                     24 	.globl _P1_6
+                                     25 	.globl _P1_5
+                                     26 	.globl _P3_7
+                                     27 	.globl _P3_6
+                                     28 	.globl _P3_4
+                                     29 	.globl _P3_3
+                                     30 	.globl _P3_2
+                                     31 	.globl _P3_1
+                                     32 	.globl _P3_0
+                                     33 	.globl _EA
+                                     34 	.globl _UEP1_DMA_H
+                                     35 	.globl _UEP1_DMA_L
+                                     36 	.globl _UEP0_DMA_H
+                                     37 	.globl _UEP0_DMA_L
+                                     38 	.globl _UEP2_3_MOD
+                                     39 	.globl _UEP4_1_MOD
+                                     40 	.globl _USB_INT_ST
+                                     41 	.globl _USB_INT_FG
+                                     42 	.globl _USB_MIS_ST
+                                     43 	.globl _USB_FBVAL
+                                     44 	.globl _USB_DEV_AD
+                                     45 	.globl _USB_INT_EN
+                                     46 	.globl _UDEV_CTRL
+                                     47 	.globl _USB_CTRL
+                                     48 	.globl _B
+                                     49 	.globl _UEP3_CTRL
+                                     50 	.globl _UEP2_T_LEN
+                                     51 	.globl _UEP2_CTRL
+                                     52 	.globl _UEP1_T_LEN
+                                     53 	.globl _UEP1_CTRL
+                                     54 	.globl _ACC
+                                     55 	.globl _CLOCK_CFG
+                                     56 	.globl _USB_C_CTRL
+                                     57 	.globl _PSW
+                                     58 	.globl _TH2
+                                     59 	.globl _TL2
+                                     60 	.globl _RCAP2H
+                                     61 	.globl _RCAP2L
+                                     62 	.globl _T2MOD
+                                     63 	.globl _T2CON
+                                     64 	.globl _WDT_ACT
+                                     65 	.globl _RESET_KEEP
+                                     66 	.globl _WDOG_WAIT
+                                     67 	.globl _IP
+                                     68 	.globl _P3_PU
+                                     69 	.globl _P3_DIR
+                                     70 	.globl _GLOBAL_CFG
+                                     71 	.globl _P3
+                                     72 	.globl _IE
+                                     73 	.globl _SAFE_MOD
+                                     74 	.globl _P2
+                                     75 	.globl _P3_MOD_OC
+                                     76 	.globl _P1_MOD_OC
+                                     77 	.globl _SBUF
+                                     78 	.globl _SCON
+                                     79 	.globl _P1_PU
+                                     80 	.globl _P1_DIR
+                                     81 	.globl _P1
+                                     82 	.globl _ROM_DATA_H
+                                     83 	.globl _TH1
+                                     84 	.globl _TH0
+                                     85 	.globl _TL1
+                                     86 	.globl _TL0
+                                     87 	.globl _TMOD
+                                     88 	.globl _TCON
+                                     89 	.globl _PCON
+                                     90 	.globl _ROM_STATUS
+                                     91 	.globl _ROM_CTRL
+                                     92 	.globl _ROM_DATA_L
+                                     93 	.globl _ROM_ADDR_H
+                                     94 	.globl _ROM_ADDR_L
+                                     95 	.globl _DPH
+                                     96 	.globl _DPL
+                                     97 	.globl _SP
+                                     98 	.globl _P0
+                                     99 ;--------------------------------------------------------
+                                    100 ; special function registers
+                                    101 ;--------------------------------------------------------
+                                    102 	.area RSEG    (ABS,DATA)
+      000000                        103 	.org 0x0000
+                           000080   104 _P0	=	0x0080
+                           000081   105 _SP	=	0x0081
+                           000082   106 _DPL	=	0x0082
+                           000083   107 _DPH	=	0x0083
+                           000084   108 _ROM_ADDR_L	=	0x0084
+                           000085   109 _ROM_ADDR_H	=	0x0085
+                           000086   110 _ROM_DATA_L	=	0x0086
+                           000086   111 _ROM_CTRL	=	0x0086
+                           000086   112 _ROM_STATUS	=	0x0086
+                           000087   113 _PCON	=	0x0087
+                           000088   114 _TCON	=	0x0088
+                           000089   115 _TMOD	=	0x0089
+                           00008A   116 _TL0	=	0x008a
+                           00008B   117 _TL1	=	0x008b
+                           00008C   118 _TH0	=	0x008c
+                           00008D   119 _TH1	=	0x008d
+                           00008E   120 _ROM_DATA_H	=	0x008e
+                           000090   121 _P1	=	0x0090
+                           000091   122 _P1_DIR	=	0x0091
+                           000092   123 _P1_PU	=	0x0092
+                           000098   124 _SCON	=	0x0098
+                           000099   125 _SBUF	=	0x0099
+                           00009A   126 _P1_MOD_OC	=	0x009a
+                           00009B   127 _P3_MOD_OC	=	0x009b
+                           0000A0   128 _P2	=	0x00a0
+                           0000A1   129 _SAFE_MOD	=	0x00a1
+                           0000A8   130 _IE	=	0x00a8
+                           0000B0   131 _P3	=	0x00b0
+                           0000B1   132 _GLOBAL_CFG	=	0x00b1
+                           0000B2   133 _P3_DIR	=	0x00b2
+                           0000B3   134 _P3_PU	=	0x00b3
+                           0000B8   135 _IP	=	0x00b8
+                           0000C0   136 _WDOG_WAIT	=	0x00c0
+                           0000C6   137 _RESET_KEEP	=	0x00c6
+                           0000C7   138 _WDT_ACT	=	0x00c7
+                           0000C8   139 _T2CON	=	0x00c8
+                           0000C9   140 _T2MOD	=	0x00c9
+                           0000CA   141 _RCAP2L	=	0x00ca
+                           0000CB   142 _RCAP2H	=	0x00cb
+                           0000CC   143 _TL2	=	0x00cc
+                           0000CD   144 _TH2	=	0x00cd
+                           0000D0   145 _PSW	=	0x00d0
+                           0000D1   146 _USB_C_CTRL	=	0x00d1
+                           0000D8   147 _CLOCK_CFG	=	0x00d8
+                           0000E0   148 _ACC	=	0x00e0
+                           0000EB   149 _UEP1_CTRL	=	0x00eb
+                           0000EC   150 _UEP1_T_LEN	=	0x00ec
+                           0000ED   151 _UEP2_CTRL	=	0x00ed
+                           0000EE   152 _UEP2_T_LEN	=	0x00ee
+                           0000EF   153 _UEP3_CTRL	=	0x00ef
+                           0000F0   154 _B	=	0x00f0
+                           0000F1   155 _USB_CTRL	=	0x00f1
+                           0000F2   156 _UDEV_CTRL	=	0x00f2
+                           0000F3   157 _USB_INT_EN	=	0x00f3
+                           0000F4   158 _USB_DEV_AD	=	0x00f4
+                           0000F5   159 _USB_FBVAL	=	0x00f5
+                           0000F6   160 _USB_MIS_ST	=	0x00f6
+                           0000F7   161 _USB_INT_FG	=	0x00f7
+                           0000F8   162 _USB_INT_ST	=	0x00f8
+                           0000F9   163 _UEP4_1_MOD	=	0x00f9
+                           0000FA   164 _UEP2_3_MOD	=	0x00fa
+                           0000FB   165 _UEP0_DMA_L	=	0x00fb
+                           0000FC   166 _UEP0_DMA_H	=	0x00fc
+                           0000FD   167 _UEP1_DMA_L	=	0x00fd
+                           0000FE   168 _UEP1_DMA_H	=	0x00fe
+                                    169 ;--------------------------------------------------------
+                                    170 ; special function bits
+                                    171 ;--------------------------------------------------------
+                                    172 	.area RSEG    (ABS,DATA)
+      000000                        173 	.org 0x0000
+                           0000AF   174 _EA	=	0x00af
+                           0000B0   175 _P3_0	=	0x00b0
+                           0000B1   176 _P3_1	=	0x00b1
+                           0000B2   177 _P3_2	=	0x00b2
+                           0000B3   178 _P3_3	=	0x00b3
+                           0000B4   179 _P3_4	=	0x00b4
+                           0000B6   180 _P3_6	=	0x00b6
+                           0000B7   181 _P3_7	=	0x00b7
+                           000095   182 _P1_5	=	0x0095
+                           000096   183 _P1_6	=	0x0096
+                           000097   184 _P1_7	=	0x0097
+                                    185 ;--------------------------------------------------------
+                                    186 ; overlayable register banks
+                                    187 ;--------------------------------------------------------
+                                    188 	.area REG_BANK_0	(REL,OVR,DATA)
+      000000                        189 	.ds 8
+                                    190 ;--------------------------------------------------------
+                                    191 ; internal ram data
+                                    192 ;--------------------------------------------------------
+                                    193 	.area DSEG    (DATA)
+      000000                        194 _is_unlocked:
+      000000                        195 	.ds 1
+      000001                        196 _ProcessPacket_rx_10000_46:
+      000001                        197 	.ds 3
+      000004                        198 _ProcessPacket_cmd_10000_46:
+      000004                        199 	.ds 1
+      000005                        200 _ProcessPacket_seq_10000_46:
+      000005                        201 	.ds 1
+      000006                        202 _ProcessPacket_addr_10000_46:
+      000006                        203 	.ds 2
+      000008                        204 _ProcessPacket_len_10000_46:
+      000008                        205 	.ds 1
+      000009                        206 _ProcessPacket_err_40000_56:
+      000009                        207 	.ds 1
+      00000A                        208 _ProcessPacket_i_50000_57:
+      00000A                        209 	.ds 1
+      00000B                        210 _ProcessPacket_sloc0_1_0:
+      00000B                        211 	.ds 1
+      00000C                        212 _ProcessPacket_sloc1_1_0:
+      00000C                        213 	.ds 2
+      00000E                        214 _ProcessPacket_sloc2_1_0:
+      00000E                        215 	.ds 3
+                                    216 ;--------------------------------------------------------
+                                    217 ; overlayable items in internal ram
+                                    218 ;--------------------------------------------------------
+                                    219 	.area	OSEG    (OVR,DATA)
+                                    220 ;--------------------------------------------------------
+                                    221 ; Stack segment in internal ram
+                                    222 ;--------------------------------------------------------
+                                    223 	.area SSEG
+      000000                        224 __start__stack:
+      000000                        225 	.ds	1
+                                    226 
+                                    227 ;--------------------------------------------------------
+                                    228 ; indirectly addressable internal ram data
+                                    229 ;--------------------------------------------------------
+                                    230 	.area ISEG    (DATA)
+                                    231 ;--------------------------------------------------------
+                                    232 ; absolute internal ram data
+                                    233 ;--------------------------------------------------------
+                                    234 	.area IABS    (ABS,DATA)
+                                    235 	.area IABS    (ABS,DATA)
+                                    236 ;--------------------------------------------------------
+                                    237 ; bit data
+                                    238 ;--------------------------------------------------------
+                                    239 	.area BSEG    (BIT)
+      000000                        240 _main_sloc0_1_0:
+      000000                        241 	.ds 1
+                                    242 ;--------------------------------------------------------
+                                    243 ; paged external ram data
+                                    244 ;--------------------------------------------------------
+                                    245 	.area PSEG    (PAG,XDATA)
+                                    246 ;--------------------------------------------------------
+                                    247 ; uninitialized external ram data
+                                    248 ;--------------------------------------------------------
+                                    249 	.area XSEG    (XDATA)
+      000000                        250 _reply_buf:
+      000000                        251 	.ds 64
+                                    252 ;--------------------------------------------------------
+                                    253 ; absolute external ram data
+                                    254 ;--------------------------------------------------------
+                                    255 	.area XABS    (ABS,XDATA)
+                                    256 ;--------------------------------------------------------
+                                    257 ; initialized external ram data
+                                    258 ;--------------------------------------------------------
+                                    259 	.area XISEG   (XDATA)
+                                    260 	.area HOME    (CODE)
+                                    261 	.area GSINIT0 (CODE)
+                                    262 	.area GSINIT1 (CODE)
+                                    263 	.area GSINIT2 (CODE)
+                                    264 	.area GSINIT3 (CODE)
+                                    265 	.area GSINIT4 (CODE)
+                                    266 	.area GSINIT5 (CODE)
+                                    267 	.area GSINIT  (CODE)
+                                    268 	.area GSFINAL (CODE)
+                                    269 	.area CSEG    (CODE)
+                                    270 ;--------------------------------------------------------
+                                    271 ; interrupt vector
+                                    272 ;--------------------------------------------------------
+                                    273 	.area HOME    (CODE)
+      000000                        274 __interrupt_vect:
+      000000 02r00r00         [24]  275 	ljmp	__sdcc_gsinit_startup
+                                    276 ; restartable atomic support routines
+      000003                        277 	.ds	5
+      000008                        278 sdcc_atomic_exchange_rollback_start::
+      000008 00               [12]  279 	nop
+      000009 00               [12]  280 	nop
+      00000A                        281 sdcc_atomic_exchange_pdata_impl:
+      00000A E2               [24]  282 	movx	a, @r0
+      00000B FB               [12]  283 	mov	r3, a
+      00000C EA               [12]  284 	mov	a, r2
+      00000D F2               [24]  285 	movx	@r0, a
+      00000E 80 2C            [24]  286 	sjmp	sdcc_atomic_exchange_exit
+      000010 00               [12]  287 	nop
+      000011 00               [12]  288 	nop
+      000012                        289 sdcc_atomic_exchange_xdata_impl:
+      000012 E0               [24]  290 	movx	a, @dptr
+      000013 FB               [12]  291 	mov	r3, a
+      000014 EA               [12]  292 	mov	a, r2
+      000015 F0               [24]  293 	movx	@dptr, a
+      000016 80 24            [24]  294 	sjmp	sdcc_atomic_exchange_exit
+      000018                        295 sdcc_atomic_compare_exchange_idata_impl:
+      000018 E6               [12]  296 	mov	a, @r0
+      000019 B5 02 02         [24]  297 	cjne	a, ar2, .+#5
+      00001C EB               [12]  298 	mov	a, r3
+      00001D F6               [12]  299 	mov	@r0, a
+      00001E 22               [24]  300 	ret
+      00001F 00               [12]  301 	nop
+      000020                        302 sdcc_atomic_compare_exchange_pdata_impl:
+      000020 E2               [24]  303 	movx	a, @r0
+      000021 B5 02 02         [24]  304 	cjne	a, ar2, .+#5
+      000024 EB               [12]  305 	mov	a, r3
+      000025 F2               [24]  306 	movx	@r0, a
+      000026 22               [24]  307 	ret
+      000027 00               [12]  308 	nop
+      000028                        309 sdcc_atomic_compare_exchange_xdata_impl:
+      000028 E0               [24]  310 	movx	a, @dptr
+      000029 B5 02 02         [24]  311 	cjne	a, ar2, .+#5
+      00002C EB               [12]  312 	mov	a, r3
+      00002D F0               [24]  313 	movx	@dptr, a
+      00002E 22               [24]  314 	ret
+      00002F                        315 sdcc_atomic_exchange_rollback_end::
+                                    316 
+      00002F                        317 sdcc_atomic_exchange_gptr_impl::
+      00002F 30 F6 E0         [24]  318 	jnb	b.6, sdcc_atomic_exchange_xdata_impl
+      000032 A8 82            [24]  319 	mov	r0, dpl
+      000034 20 F5 D3         [24]  320 	jb	b.5, sdcc_atomic_exchange_pdata_impl
+      000037                        321 sdcc_atomic_exchange_idata_impl:
+      000037 EA               [12]  322 	mov	a, r2
+      000038 C6               [12]  323 	xch	a, @r0
+      000039 F5 82            [12]  324 	mov	dpl, a
+      00003B 22               [24]  325 	ret
+      00003C                        326 sdcc_atomic_exchange_exit:
+      00003C 8B 82            [24]  327 	mov	dpl, r3
+      00003E 22               [24]  328 	ret
+      00003F                        329 sdcc_atomic_compare_exchange_gptr_impl::
+      00003F 30 F6 E6         [24]  330 	jnb	b.6, sdcc_atomic_compare_exchange_xdata_impl
+      000042 A8 82            [24]  331 	mov	r0, dpl
+      000044 20 F5 D9         [24]  332 	jb	b.5, sdcc_atomic_compare_exchange_pdata_impl
+      000047 80 CF            [24]  333 	sjmp	sdcc_atomic_compare_exchange_idata_impl
+                                    334 ;--------------------------------------------------------
+                                    335 ; global & static initialisations
+                                    336 ;--------------------------------------------------------
+                                    337 	.area HOME    (CODE)
+                                    338 	.area GSINIT  (CODE)
+                                    339 	.area GSFINAL (CODE)
+                                    340 	.area GSINIT  (CODE)
+                                    341 	.globl __sdcc_gsinit_startup
+                                    342 	.globl __sdcc_program_startup
+                                    343 	.globl __start__stack
+                                    344 	.globl __mcs51_genXINIT
+                                    345 	.globl __mcs51_genXRAMCLEAR
+                                    346 	.globl __mcs51_genRAMCLEAR
+                                    347 ;	src/main.c:23: static uint8_t is_unlocked = 0;
+      000000 75*00 00         [24]  348 	mov	_is_unlocked,#0x00
+                                    349 	.area GSFINAL (CODE)
+      000000 02r00r49         [24]  350 	ljmp	__sdcc_program_startup
+                                    351 ;--------------------------------------------------------
+                                    352 ; Home
+                                    353 ;--------------------------------------------------------
+                                    354 	.area HOME    (CODE)
+                                    355 	.area HOME    (CODE)
+      000049                        356 __sdcc_program_startup:
+      000049 12r03r0E         [24]  357 	lcall	_main
+      00004C                        358 __sdcc_program_exit:
+      00004C 80 FE            [24]  359 	sjmp	.
+                                    360 ;	return from main will return to caller
+                                    361 ;--------------------------------------------------------
+                                    362 ; code
+                                    363 ;--------------------------------------------------------
+                                    364 	.area CSEG    (CODE)
+                                    365 ;------------------------------------------------------------
+                                    366 ;Allocation info for local variables in function 'DelayMs'
+                                    367 ;------------------------------------------------------------
+                                    368 ;ms            Allocated to registers 
+                                    369 ;i             Allocated to registers r4 r5 
+                                    370 ;------------------------------------------------------------
+                                    371 ;	src/main.c:26: static void DelayMs(uint16_t ms) {
+                                    372 ;	-----------------------------------------
+                                    373 ;	 function DelayMs
+                                    374 ;	-----------------------------------------
+      000000                        375 _DelayMs:
+                           000007   376 	ar7 = 0x07
+                           000006   377 	ar6 = 0x06
+                           000005   378 	ar5 = 0x05
+                           000004   379 	ar4 = 0x04
+                           000003   380 	ar3 = 0x03
+                           000002   381 	ar2 = 0x02
+                           000001   382 	ar1 = 0x01
+                           000000   383 	ar0 = 0x00
+      000000 AE 82            [24]  384 	mov	r6, dpl
+      000002 AF 83            [24]  385 	mov	r7, dph
+                                    386 ;	src/main.c:27: while (ms--) {
+      000004                        387 00102$:
+      000004 8E 04            [24]  388 	mov	ar4,r6
+      000006 8F 05            [24]  389 	mov	ar5,r7
+      000008 1E               [12]  390 	dec	r6
+      000009 BE FF 01         [24]  391 	cjne	r6,#0xff,00139$
+      00000C 1F               [12]  392 	dec	r7
+      00000D                        393 00139$:
+      00000D EC               [12]  394 	mov	a,r4
+      00000E 4D               [12]  395 	orl	a,r5
+      00000F 60 19            [24]  396 	jz	00108$
+                                    397 ;	src/main.c:28: for (uint16_t i = 0; i < 2400; i++) {
+      000011 7C 00            [12]  398 	mov	r4,#0x00
+      000013 7D 00            [12]  399 	mov	r5,#0x00
+      000015                        400 00106$:
+      000015 8C 02            [24]  401 	mov	ar2,r4
+      000017 8D 03            [24]  402 	mov	ar3,r5
+      000019 C3               [12]  403 	clr	c
+      00001A EA               [12]  404 	mov	a,r2
+      00001B 94 60            [12]  405 	subb	a,#0x60
+      00001D EB               [12]  406 	mov	a,r3
+      00001E 94 09            [12]  407 	subb	a,#0x09
+      000020 50 E2            [24]  408 	jnc	00102$
+                                    409 ;	src/main.c:29: __asm nop __endasm;
+      000022 00               [12]  410 	nop	
+                                    411 ;	src/main.c:28: for (uint16_t i = 0; i < 2400; i++) {
+      000023 0C               [12]  412 	inc	r4
+      000024 BC 00 EE         [24]  413 	cjne	r4,#0x00,00106$
+      000027 0D               [12]  414 	inc	r5
+      000028 80 EB            [24]  415 	sjmp	00106$
+      00002A                        416 00108$:
+                                    417 ;	src/main.c:32: }
+      00002A 22               [24]  418 	ret
+                                    419 ;------------------------------------------------------------
+                                    420 ;Allocation info for local variables in function 'JumpToApp'
+                                    421 ;------------------------------------------------------------
+                                    422 ;	src/main.c:34: static void JumpToApp(void) {
+                                    423 ;	-----------------------------------------
+                                    424 ;	 function JumpToApp
+                                    425 ;	-----------------------------------------
+      00002B                        426 _JumpToApp:
+                                    427 ;	src/main.c:35: USB_Shutdown();
+      00002B 12r00r00         [24]  428 	lcall	_USB_Shutdown
+                                    429 ;	src/main.c:36: DelayMs(10);
+      00002E 90 00 0A         [24]  430 	mov	dptr,#0x000a
+      000031 12r00r00         [24]  431 	lcall	_DelayMs
+                                    432 ;	src/main.c:40: __endasm;
+      000034 02 00 00         [24]  433 	ljmp 0x0000
+                                    434 ;	src/main.c:41: }
+      000037 22               [24]  435 	ret
+                                    436 ;------------------------------------------------------------
+                                    437 ;Allocation info for local variables in function 'ProcessPacket'
+                                    438 ;------------------------------------------------------------
+                                    439 ;rx            Allocated with name '_ProcessPacket_rx_10000_46'
+                                    440 ;cmd           Allocated with name '_ProcessPacket_cmd_10000_46'
+                                    441 ;seq           Allocated with name '_ProcessPacket_seq_10000_46'
+                                    442 ;addr          Allocated with name '_ProcessPacket_addr_10000_46'
+                                    443 ;len           Allocated with name '_ProcessPacket_len_10000_46'
+                                    444 ;err           Allocated with name '_ProcessPacket_err_40000_56'
+                                    445 ;i             Allocated with name '_ProcessPacket_i_50000_57'
+                                    446 ;word          Allocated to registers 
+                                    447 ;expected_crc  Allocated to registers r4 r7 
+                                    448 ;calc_crc      Allocated to registers r5 r6 
+                                    449 ;sloc0         Allocated with name '_ProcessPacket_sloc0_1_0'
+                                    450 ;sloc1         Allocated with name '_ProcessPacket_sloc1_1_0'
+                                    451 ;sloc2         Allocated with name '_ProcessPacket_sloc2_1_0'
+                                    452 ;------------------------------------------------------------
+                                    453 ;	src/main.c:43: static void ProcessPacket(void) {
+                                    454 ;	-----------------------------------------
+                                    455 ;	 function ProcessPacket
+                                    456 ;	-----------------------------------------
+      000038                        457 _ProcessPacket:
+                                    458 ;	src/main.c:44: uint8_t *rx = USB_GetRxBuffer();
+      000038 12r00r00         [24]  459 	lcall	_USB_GetRxBuffer
+                                    460 ;	src/main.c:45: uint8_t cmd = rx[0];
+      00003B 85 82*01         [24]  461 	mov	_ProcessPacket_rx_10000_46,dpl
+      00003E 85 83*02         [24]  462 	mov	(_ProcessPacket_rx_10000_46 + 1),dph
+      000041 85 F0*03         [24]  463 	mov	(_ProcessPacket_rx_10000_46 + 2),b
+      000044 12r00r00         [24]  464 	lcall	__gptrget
+      000047 F5*04            [12]  465 	mov	_ProcessPacket_cmd_10000_46,a
+                                    466 ;	src/main.c:46: uint8_t seq = rx[1];
+      000049 74 01            [12]  467 	mov	a,#0x01
+      00004B 25*01            [12]  468 	add	a, _ProcessPacket_rx_10000_46
+      00004D F9               [12]  469 	mov	r1,a
+      00004E E4               [12]  470 	clr	a
+      00004F 35*02            [12]  471 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      000051 FA               [12]  472 	mov	r2,a
+      000052 AB*03            [24]  473 	mov	r3,(_ProcessPacket_rx_10000_46 + 2)
+      000054 89 82            [24]  474 	mov	dpl,r1
+      000056 8A 83            [24]  475 	mov	dph,r2
+      000058 8B F0            [24]  476 	mov	b,r3
+      00005A 12r00r00         [24]  477 	lcall	__gptrget
+      00005D F5*05            [12]  478 	mov	_ProcessPacket_seq_10000_46,a
+                                    479 ;	src/main.c:47: uint16_t addr = rx[2] | ((uint16_t)rx[3] << 8);
+      00005F 74 02            [12]  480 	mov	a,#0x02
+      000061 25*01            [12]  481 	add	a, _ProcessPacket_rx_10000_46
+      000063 F8               [12]  482 	mov	r0,a
+      000064 E4               [12]  483 	clr	a
+      000065 35*02            [12]  484 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      000067 FA               [12]  485 	mov	r2,a
+      000068 AB*03            [24]  486 	mov	r3,(_ProcessPacket_rx_10000_46 + 2)
+      00006A 88 82            [24]  487 	mov	dpl,r0
+      00006C 8A 83            [24]  488 	mov	dph,r2
+      00006E 8B F0            [24]  489 	mov	b,r3
+      000070 12r00r00         [24]  490 	lcall	__gptrget
+      000073 F5*0B            [12]  491 	mov	_ProcessPacket_sloc0_1_0,a
+      000075 74 03            [12]  492 	mov	a,#0x03
+      000077 25*01            [12]  493 	add	a, _ProcessPacket_rx_10000_46
+      000079 F5*0E            [12]  494 	mov	_ProcessPacket_sloc2_1_0,a
+      00007B E4               [12]  495 	clr	a
+      00007C 35*02            [12]  496 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      00007E F5*0F            [12]  497 	mov	(_ProcessPacket_sloc2_1_0 + 1),a
+      000080 85*03*10         [24]  498 	mov	(_ProcessPacket_sloc2_1_0 + 2),(_ProcessPacket_rx_10000_46 + 2)
+      000083 85*0E 82         [24]  499 	mov	dpl,_ProcessPacket_sloc2_1_0
+      000086 85*0F 83         [24]  500 	mov	dph,(_ProcessPacket_sloc2_1_0 + 1)
+      000089 85*10 F0         [24]  501 	mov	b,(_ProcessPacket_sloc2_1_0 + 2)
+      00008C 12r00r00         [24]  502 	lcall	__gptrget
+      00008F F9               [12]  503 	mov	r1,a
+      000090 7D 00            [12]  504 	mov	r5,#0x00
+      000092 89*0D            [24]  505 	mov	(_ProcessPacket_sloc1_1_0 + 1),r1
+      000094 8D*0C            [24]  506 	mov	_ProcessPacket_sloc1_1_0,r5
+      000096 A9*0B            [24]  507 	mov	r1,_ProcessPacket_sloc0_1_0
+      000098 89*06            [24]  508 	mov	_ProcessPacket_addr_10000_46,r1
+      00009A E5*0D            [12]  509 	mov	a,(_ProcessPacket_sloc1_1_0 + 1)
+      00009C 4D               [12]  510 	orl	a,r5
+      00009D F5*07            [12]  511 	mov	(_ProcessPacket_addr_10000_46 + 1),a
+                                    512 ;	src/main.c:48: uint8_t len = rx[4];
+      00009F 74 04            [12]  513 	mov	a,#0x04
+      0000A1 25*01            [12]  514 	add	a, _ProcessPacket_rx_10000_46
+      0000A3 F9               [12]  515 	mov	r1,a
+      0000A4 E4               [12]  516 	clr	a
+      0000A5 35*02            [12]  517 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      0000A7 FD               [12]  518 	mov	r5,a
+      0000A8 AF*03            [24]  519 	mov	r7,(_ProcessPacket_rx_10000_46 + 2)
+      0000AA 89 82            [24]  520 	mov	dpl,r1
+      0000AC 8D 83            [24]  521 	mov	dph,r5
+      0000AE 8F F0            [24]  522 	mov	b,r7
+      0000B0 12r00r00         [24]  523 	lcall	__gptrget
+      0000B3 F5*08            [12]  524 	mov	_ProcessPacket_len_10000_46,a
+                                    525 ;	src/main.c:50: memset(reply_buf, 0, 64);
+      0000B5 75*00 00         [24]  526 	mov	_memset_PARM_2,#0x00
+      0000B8 75*00 40         [24]  527 	mov	_memset_PARM_3,#0x40
+      0000BB 75*01 00         [24]  528 	mov	(_memset_PARM_3 + 1),#0x00
+      0000BE 90r00r00         [24]  529 	mov	dptr,#_reply_buf
+      0000C1 75 F0 00         [24]  530 	mov	b, #0x00
+      0000C4 C0 03            [24]  531 	push	ar3
+      0000C6 C0 02            [24]  532 	push	ar2
+      0000C8 C0 00            [24]  533 	push	ar0
+      0000CA 12r00r00         [24]  534 	lcall	_memset
+      0000CD D0 00            [24]  535 	pop	ar0
+      0000CF D0 02            [24]  536 	pop	ar2
+      0000D1 D0 03            [24]  537 	pop	ar3
+                                    538 ;	src/main.c:51: reply_buf[0] = cmd;
+      0000D3 90r00r00         [24]  539 	mov	dptr,#_reply_buf
+      0000D6 E5*04            [12]  540 	mov	a,_ProcessPacket_cmd_10000_46
+      0000D8 F0               [24]  541 	movx	@dptr,a
+                                    542 ;	src/main.c:52: reply_buf[1] = seq;
+      0000D9 90r00r01         [24]  543 	mov	dptr,#(_reply_buf + 0x0001)
+      0000DC E5*05            [12]  544 	mov	a,_ProcessPacket_seq_10000_46
+      0000DE F0               [24]  545 	movx	@dptr,a
+                                    546 ;	src/main.c:53: reply_buf[2] = rx[2];
+      0000DF 88 82            [24]  547 	mov	dpl,r0
+      0000E1 8A 83            [24]  548 	mov	dph,r2
+      0000E3 8B F0            [24]  549 	mov	b,r3
+      0000E5 12r00r00         [24]  550 	lcall	__gptrget
+      0000E8 F8               [12]  551 	mov	r0,a
+      0000E9 90r00r02         [24]  552 	mov	dptr,#(_reply_buf + 0x0002)
+      0000EC F0               [24]  553 	movx	@dptr,a
+                                    554 ;	src/main.c:54: reply_buf[3] = rx[3];
+      0000ED 85*0E 82         [24]  555 	mov	dpl,_ProcessPacket_sloc2_1_0
+      0000F0 85*0F 83         [24]  556 	mov	dph,(_ProcessPacket_sloc2_1_0 + 1)
+      0000F3 85*10 F0         [24]  557 	mov	b,(_ProcessPacket_sloc2_1_0 + 2)
+      0000F6 12r00r00         [24]  558 	lcall	__gptrget
+      0000F9 FE               [12]  559 	mov	r6,a
+      0000FA 90r00r03         [24]  560 	mov	dptr,#(_reply_buf + 0x0003)
+      0000FD F0               [24]  561 	movx	@dptr,a
+                                    562 ;	src/main.c:55: reply_buf[59] = STATUS_OK;
+      0000FE 90r00r3B         [24]  563 	mov	dptr,#(_reply_buf + 0x003b)
+      000101 E4               [12]  564 	clr	a
+      000102 F0               [24]  565 	movx	@dptr,a
+                                    566 ;	src/main.c:57: switch (cmd) {
+      000103 E5*04            [12]  567 	mov	a,_ProcessPacket_cmd_10000_46
+      000105 24 F9            [12]  568 	add	a,#0xff - 0x06
+      000107 50 03            [24]  569 	jnc	00214$
+      000109 02r02rF9         [24]  570 	ljmp	00119$
+      00010C                        571 00214$:
+                                    572 ;	free result
+      00010C E5*04            [12]  573 	mov	a,_ProcessPacket_cmd_10000_46
+      00010E 75 F0 03         [24]  574 	mov	b,#0x03
+      000111 A4               [48]  575 	mul	ab
+      000112 90r01r16         [24]  576 	mov	dptr,#00215$
+      000115 73               [24]  577 	jmp	@a+dptr
+      000116                        578 00215$:
+      000116 02r02rF9         [24]  579 	ljmp	00119$
+      000119 02r01r2B         [24]  580 	ljmp	00101$
+      00011C 02r01r4B         [24]  581 	ljmp	00102$
+      00011F 02r02rF9         [24]  582 	ljmp	00119$
+      000122 02r01rC2         [24]  583 	ljmp	00109$
+      000125 02r02r72         [24]  584 	ljmp	00117$
+      000128 02r02rE0         [24]  585 	ljmp	00118$
+                                    586 ;	src/main.c:58: case CMD_HELLO:
+      00012B                        587 00101$:
+                                    588 ;	src/main.c:59: reply_buf[4] = 0x52; // Chip ID: CH552
+      00012B 90r00r04         [24]  589 	mov	dptr,#(_reply_buf + 0x0004)
+      00012E 74 52            [12]  590 	mov	a,#0x52
+      000130 F0               [24]  591 	movx	@dptr,a
+                                    592 ;	src/main.c:60: reply_buf[5] = 0x01; // Bootloader v1.0
+      000131 90r00r05         [24]  593 	mov	dptr,#(_reply_buf + 0x0005)
+      000134 74 01            [12]  594 	mov	a,#0x01
+      000136 F0               [24]  595 	movx	@dptr,a
+                                    596 ;	src/main.c:61: reply_buf[6] = (uint8_t)(USER_FLASH_END & 0xFF);
+      000137 90r00r06         [24]  597 	mov	dptr,#(_reply_buf + 0x0006)
+      00013A 74 FF            [12]  598 	mov	a,#0xff
+      00013C F0               [24]  599 	movx	@dptr,a
+                                    600 ;	src/main.c:62: reply_buf[7] = (uint8_t)((USER_FLASH_END >> 8) & 0xFF); // 11 KB usable
+      00013D 90r00r07         [24]  601 	mov	dptr,#(_reply_buf + 0x0007)
+      000140 74 2B            [12]  602 	mov	a,#0x2b
+      000142 F0               [24]  603 	movx	@dptr,a
+                                    604 ;	src/main.c:63: reply_buf[59] = STATUS_OK;
+      000143 90r00r3B         [24]  605 	mov	dptr,#(_reply_buf + 0x003b)
+      000146 E4               [12]  606 	clr	a
+      000147 F0               [24]  607 	movx	@dptr,a
+                                    608 ;	src/main.c:64: break;
+      000148 02r02rFF         [24]  609 	ljmp	00120$
+                                    610 ;	src/main.c:66: case CMD_UNLOCK:
+      00014B                        611 00102$:
+                                    612 ;	src/main.c:67: if (rx[5] == 0x5A && rx[6] == 0xC3 && rx[7] == 0x3C && rx[8] == 0xA5) {
+      00014B 74 05            [12]  613 	mov	a,#0x05
+      00014D 25*01            [12]  614 	add	a, _ProcessPacket_rx_10000_46
+      00014F FC               [12]  615 	mov	r4,a
+      000150 E4               [12]  616 	clr	a
+      000151 35*02            [12]  617 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      000153 FD               [12]  618 	mov	r5,a
+      000154 AE*03            [24]  619 	mov	r6,(_ProcessPacket_rx_10000_46 + 2)
+      000156 8C 82            [24]  620 	mov	dpl,r4
+      000158 8D 83            [24]  621 	mov	dph,r5
+      00015A 8E F0            [24]  622 	mov	b,r6
+      00015C 12r00r00         [24]  623 	lcall	__gptrget
+      00015F FC               [12]  624 	mov	r4,a
+      000160 BC 5A 53         [24]  625 	cjne	r4,#0x5a,00104$
+      000163 74 06            [12]  626 	mov	a,#0x06
+      000165 25*01            [12]  627 	add	a, _ProcessPacket_rx_10000_46
+      000167 FC               [12]  628 	mov	r4,a
+      000168 E4               [12]  629 	clr	a
+      000169 35*02            [12]  630 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      00016B FD               [12]  631 	mov	r5,a
+      00016C AE*03            [24]  632 	mov	r6,(_ProcessPacket_rx_10000_46 + 2)
+      00016E 8C 82            [24]  633 	mov	dpl,r4
+      000170 8D 83            [24]  634 	mov	dph,r5
+      000172 8E F0            [24]  635 	mov	b,r6
+      000174 12r00r00         [24]  636 	lcall	__gptrget
+      000177 FC               [12]  637 	mov	r4,a
+      000178 BC C3 3B         [24]  638 	cjne	r4,#0xc3,00104$
+      00017B 74 07            [12]  639 	mov	a,#0x07
+      00017D 25*01            [12]  640 	add	a, _ProcessPacket_rx_10000_46
+      00017F FC               [12]  641 	mov	r4,a
+      000180 E4               [12]  642 	clr	a
+      000181 35*02            [12]  643 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      000183 FD               [12]  644 	mov	r5,a
+      000184 AE*03            [24]  645 	mov	r6,(_ProcessPacket_rx_10000_46 + 2)
+      000186 8C 82            [24]  646 	mov	dpl,r4
+      000188 8D 83            [24]  647 	mov	dph,r5
+      00018A 8E F0            [24]  648 	mov	b,r6
+      00018C 12r00r00         [24]  649 	lcall	__gptrget
+      00018F FC               [12]  650 	mov	r4,a
+      000190 BC 3C 23         [24]  651 	cjne	r4,#0x3c,00104$
+      000193 74 08            [12]  652 	mov	a,#0x08
+      000195 25*01            [12]  653 	add	a, _ProcessPacket_rx_10000_46
+      000197 FC               [12]  654 	mov	r4,a
+      000198 E4               [12]  655 	clr	a
+      000199 35*02            [12]  656 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      00019B FD               [12]  657 	mov	r5,a
+      00019C AE*03            [24]  658 	mov	r6,(_ProcessPacket_rx_10000_46 + 2)
+      00019E 8C 82            [24]  659 	mov	dpl,r4
+      0001A0 8D 83            [24]  660 	mov	dph,r5
+      0001A2 8E F0            [24]  661 	mov	b,r6
+      0001A4 12r00r00         [24]  662 	lcall	__gptrget
+      0001A7 FC               [12]  663 	mov	r4,a
+      0001A8 BC A5 0B         [24]  664 	cjne	r4,#0xa5,00104$
+                                    665 ;	src/main.c:68: is_unlocked = 1;
+      0001AB 75*00 01         [24]  666 	mov	_is_unlocked,#0x01
+                                    667 ;	src/main.c:69: reply_buf[59] = STATUS_OK;
+      0001AE 90r00r3B         [24]  668 	mov	dptr,#(_reply_buf + 0x003b)
+      0001B1 E4               [12]  669 	clr	a
+      0001B2 F0               [24]  670 	movx	@dptr,a
+      0001B3 02r02rFF         [24]  671 	ljmp	00120$
+      0001B6                        672 00104$:
+                                    673 ;	src/main.c:71: is_unlocked = 0;
+      0001B6 75*00 00         [24]  674 	mov	_is_unlocked,#0x00
+                                    675 ;	src/main.c:72: reply_buf[59] = STATUS_LOCKED;
+      0001B9 90r00r3B         [24]  676 	mov	dptr,#(_reply_buf + 0x003b)
+      0001BC 74 02            [12]  677 	mov	a,#0x02
+      0001BE F0               [24]  678 	movx	@dptr,a
+                                    679 ;	src/main.c:74: break;
+      0001BF 02r02rFF         [24]  680 	ljmp	00120$
+                                    681 ;	src/main.c:76: case CMD_WRITE_BLOCK:
+      0001C2                        682 00109$:
+                                    683 ;	src/main.c:77: if (!is_unlocked) {
+      0001C2 E5*00            [12]  684 	mov	a,_is_unlocked
+      0001C4 70 09            [24]  685 	jnz	00111$
+                                    686 ;	src/main.c:78: reply_buf[59] = STATUS_LOCKED;
+      0001C6 90r00r3B         [24]  687 	mov	dptr,#(_reply_buf + 0x003b)
+      0001C9 74 02            [12]  688 	mov	a,#0x02
+      0001CB F0               [24]  689 	movx	@dptr,a
+                                    690 ;	src/main.c:79: break;
+      0001CC 02r02rFF         [24]  691 	ljmp	00120$
+      0001CF                        692 00111$:
+                                    693 ;	src/main.c:82: if (addr + len > BOOTLOADER_START) {
+      0001CF AD*08            [24]  694 	mov	r5,_ProcessPacket_len_10000_46
+      0001D1 7E 00            [12]  695 	mov	r6,#0x00
+      0001D3 A9*06            [24]  696 	mov	r1,_ProcessPacket_addr_10000_46
+      0001D5 AC*07            [24]  697 	mov	r4,(_ProcessPacket_addr_10000_46 + 1)
+      0001D7 ED               [12]  698 	mov	a,r5
+      0001D8 29               [12]  699 	add	a, r1
+      0001D9 FD               [12]  700 	mov	r5,a
+      0001DA EE               [12]  701 	mov	a,r6
+      0001DB 3C               [12]  702 	addc	a, r4
+      0001DC FE               [12]  703 	mov	r6,a
+      0001DD C3               [12]  704 	clr	c
+      0001DE E4               [12]  705 	clr	a
+      0001DF 9D               [12]  706 	subb	a,r5
+      0001E0 74 2C            [12]  707 	mov	a,#0x2c
+      0001E2 9E               [12]  708 	subb	a,r6
+      0001E3 50 09            [24]  709 	jnc	00113$
+                                    710 ;	free result
+                                    711 ;	src/main.c:83: reply_buf[59] = STATUS_OOB; // Protect bootloader
+      0001E5 90r00r3B         [24]  712 	mov	dptr,#(_reply_buf + 0x003b)
+      0001E8 74 03            [12]  713 	mov	a,#0x03
+      0001EA F0               [24]  714 	movx	@dptr,a
+                                    715 ;	src/main.c:84: break;
+      0001EB 02r02rFF         [24]  716 	ljmp	00120$
+      0001EE                        717 00113$:
+                                    718 ;	src/main.c:89: uint8_t err = 0;
+      0001EE 75*09 00         [24]  719 	mov	_ProcessPacket_err_40000_56,#0x00
+                                    720 ;	src/main.c:90: for (uint8_t i = 0; i < len; i += 2) {
+      0001F1 75*0A 00         [24]  721 	mov	_ProcessPacket_i_50000_57,#0x00
+      0001F4                        722 00122$:
+      0001F4 C3               [12]  723 	clr	c
+      0001F5 E5*0A            [12]  724 	mov	a,_ProcessPacket_i_50000_57
+      0001F7 95*08            [12]  725 	subb	a,_ProcessPacket_len_10000_46
+      0001F9 50 6A            [24]  726 	jnc	00116$
+                                    727 ;	src/main.c:91: uint16_t word = rx[5 + i] | ((uint16_t)rx[6 + i] << 8);
+      0001FB AA*0A            [24]  728 	mov	r2,_ProcessPacket_i_50000_57
+      0001FD 7B 00            [12]  729 	mov	r3,#0x00
+      0001FF 74 05            [12]  730 	mov	a,#0x05
+      000201 2A               [12]  731 	add	a, r2
+      000202 F8               [12]  732 	mov	r0,a
+      000203 E4               [12]  733 	clr	a
+      000204 3B               [12]  734 	addc	a, r3
+      000205 FE               [12]  735 	mov	r6,a
+      000206 E8               [12]  736 	mov	a,r0
+      000207 25*01            [12]  737 	add	a, _ProcessPacket_rx_10000_46
+      000209 F8               [12]  738 	mov	r0,a
+      00020A EE               [12]  739 	mov	a,r6
+      00020B 35*02            [12]  740 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      00020D FE               [12]  741 	mov	r6,a
+      00020E AF*03            [24]  742 	mov	r7,(_ProcessPacket_rx_10000_46 + 2)
+      000210 88 82            [24]  743 	mov	dpl,r0
+      000212 8E 83            [24]  744 	mov	dph,r6
+      000214 8F F0            [24]  745 	mov	b,r7
+      000216 12r00r00         [24]  746 	lcall	__gptrget
+      000219 F8               [12]  747 	mov	r0,a
+      00021A 74 06            [12]  748 	mov	a,#0x06
+      00021C 2A               [12]  749 	add	a, r2
+      00021D FE               [12]  750 	mov	r6,a
+      00021E E4               [12]  751 	clr	a
+      00021F 3B               [12]  752 	addc	a, r3
+      000220 FF               [12]  753 	mov	r7,a
+      000221 EE               [12]  754 	mov	a,r6
+      000222 25*01            [12]  755 	add	a, _ProcessPacket_rx_10000_46
+      000224 FE               [12]  756 	mov	r6,a
+      000225 EF               [12]  757 	mov	a,r7
+      000226 35*02            [12]  758 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      000228 FD               [12]  759 	mov	r5,a
+      000229 AF*03            [24]  760 	mov	r7,(_ProcessPacket_rx_10000_46 + 2)
+      00022B 8E 82            [24]  761 	mov	dpl,r6
+      00022D 8D 83            [24]  762 	mov	dph,r5
+      00022F 8F F0            [24]  763 	mov	b,r7
+      000231 12r00r00         [24]  764 	lcall	__gptrget
+      000234 FF               [12]  765 	mov	r7,a
+      000235 E4               [12]  766 	clr	a
+      000236 FD               [12]  767 	mov	r5,a
+      000237 48               [12]  768 	orl	a,r0
+      000238 F5*00            [12]  769 	mov	_IAP_WriteWord_PARM_2,a
+      00023A EF               [12]  770 	mov	a,r7
+      00023B 4D               [12]  771 	orl	a,r5
+      00023C F5*01            [12]  772 	mov	(_IAP_WriteWord_PARM_2 + 1),a
+                                    773 ;	src/main.c:92: if (IAP_WriteWord(addr + i, word) != 0) {
+      00023E EA               [12]  774 	mov	a,r2
+      00023F 29               [12]  775 	add	a, r1
+      000240 FA               [12]  776 	mov	r2,a
+      000241 EB               [12]  777 	mov	a,r3
+      000242 3C               [12]  778 	addc	a, r4
+      000243 FB               [12]  779 	mov	r3,a
+      000244 8A 82            [24]  780 	mov	dpl,r2
+      000246 8B 83            [24]  781 	mov	dph,r3
+      000248 C0 04            [24]  782 	push	ar4
+      00024A C0 01            [24]  783 	push	ar1
+      00024C 12r00r00         [24]  784 	lcall	_IAP_WriteWord
+      00024F E5 82            [12]  785 	mov	a, dpl
+      000251 D0 01            [24]  786 	pop	ar1
+      000253 D0 04            [24]  787 	pop	ar4
+      000255 60 05            [24]  788 	jz	00123$
+                                    789 ;	src/main.c:93: err = 1;
+      000257 75*09 01         [24]  790 	mov	_ProcessPacket_err_40000_56,#0x01
+                                    791 ;	src/main.c:94: break;
+      00025A 80 09            [24]  792 	sjmp	00116$
+      00025C                        793 00123$:
+                                    794 ;	src/main.c:90: for (uint8_t i = 0; i < len; i += 2) {
+      00025C AD*0A            [24]  795 	mov	r5,_ProcessPacket_i_50000_57
+      00025E 74 02            [12]  796 	mov	a,#0x02
+      000260 2D               [12]  797 	add	a, r5
+      000261 F5*0A            [12]  798 	mov	_ProcessPacket_i_50000_57,a
+      000263 80 8F            [24]  799 	sjmp	00122$
+      000265                        800 00116$:
+                                    801 ;	src/main.c:97: reply_buf[59] = err ? STATUS_WRITE_ERR : STATUS_OK;
+      000265 E5*09            [12]  802 	mov	a,_ProcessPacket_err_40000_56
+      000267 60 02            [24]  803 	jz	00126$
+      000269 74 04            [12]  804 	mov	a,#0x04
+      00026B                        805 00126$:
+      00026B 90r00r3B         [24]  806 	mov	dptr,#(_reply_buf + 0x003b)
+      00026E F0               [24]  807 	movx	@dptr,a
+                                    808 ;	src/main.c:99: break;
+      00026F 02r02rFF         [24]  809 	ljmp	00120$
+                                    810 ;	src/main.c:101: case CMD_VERIFY_CRC:
+      000272                        811 00117$:
+                                    812 ;	src/main.c:103: uint16_t expected_crc = rx[5] | ((uint16_t)rx[6] << 8);
+      000272 74 05            [12]  813 	mov	a,#0x05
+      000274 25*01            [12]  814 	add	a, _ProcessPacket_rx_10000_46
+      000276 FD               [12]  815 	mov	r5,a
+      000277 E4               [12]  816 	clr	a
+      000278 35*02            [12]  817 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      00027A FE               [12]  818 	mov	r6,a
+      00027B AF*03            [24]  819 	mov	r7,(_ProcessPacket_rx_10000_46 + 2)
+      00027D 8D 82            [24]  820 	mov	dpl,r5
+      00027F 8E 83            [24]  821 	mov	dph,r6
+      000281 8F F0            [24]  822 	mov	b,r7
+      000283 12r00r00         [24]  823 	lcall	__gptrget
+      000286 FD               [12]  824 	mov	r5,a
+      000287 74 06            [12]  825 	mov	a,#0x06
+      000289 25*01            [12]  826 	add	a, _ProcessPacket_rx_10000_46
+      00028B FC               [12]  827 	mov	r4,a
+      00028C E4               [12]  828 	clr	a
+      00028D 35*02            [12]  829 	addc	a, (_ProcessPacket_rx_10000_46 + 1)
+      00028F FE               [12]  830 	mov	r6,a
+      000290 AF*03            [24]  831 	mov	r7,(_ProcessPacket_rx_10000_46 + 2)
+      000292 8C 82            [24]  832 	mov	dpl,r4
+      000294 8E 83            [24]  833 	mov	dph,r6
+      000296 8F F0            [24]  834 	mov	b,r7
+      000298 12r00r00         [24]  835 	lcall	__gptrget
+      00029B FF               [12]  836 	mov	r7,a
+      00029C E4               [12]  837 	clr	a
+      00029D FC               [12]  838 	mov	r4,a
+      00029E FE               [12]  839 	mov	r6,a
+      00029F ED               [12]  840 	mov	a,r5
+      0002A0 42 04            [12]  841 	orl	ar4,a
+      0002A2 EE               [12]  842 	mov	a,r6
+      0002A3 42 07            [12]  843 	orl	ar7,a
+                                    844 ;	src/main.c:104: uint16_t calc_crc = IAP_CalculateCRC16(0x0000, addr); // addr represents end of code
+      0002A5 85*06*00         [24]  845 	mov	_IAP_CalculateCRC16_PARM_2,_ProcessPacket_addr_10000_46
+      0002A8 85*07*01         [24]  846 	mov	(_IAP_CalculateCRC16_PARM_2 + 1),(_ProcessPacket_addr_10000_46 + 1)
+      0002AB 90 00 00         [24]  847 	mov	dptr,#0x0000
+      0002AE C0 07            [24]  848 	push	ar7
+      0002B0 C0 04            [24]  849 	push	ar4
+      0002B2 12r00r00         [24]  850 	lcall	_IAP_CalculateCRC16
+      0002B5 AD 82            [24]  851 	mov	r5, dpl
+      0002B7 AE 83            [24]  852 	mov	r6, dph
+      0002B9 D0 04            [24]  853 	pop	ar4
+      0002BB D0 07            [24]  854 	pop	ar7
+                                    855 ;	src/main.c:105: reply_buf[4] = (uint8_t)(calc_crc & 0xFF);
+      0002BD 8D 03            [24]  856 	mov	ar3,r5
+      0002BF 90r00r04         [24]  857 	mov	dptr,#(_reply_buf + 0x0004)
+      0002C2 EB               [12]  858 	mov	a,r3
+      0002C3 F0               [24]  859 	movx	@dptr,a
+                                    860 ;	src/main.c:106: reply_buf[5] = (uint8_t)((calc_crc >> 8) & 0xFF);
+      0002C4 8E 03            [24]  861 	mov	ar3,r6
+      0002C6 90r00r05         [24]  862 	mov	dptr,#(_reply_buf + 0x0005)
+      0002C9 EB               [12]  863 	mov	a,r3
+      0002CA F0               [24]  864 	movx	@dptr,a
+                                    865 ;	src/main.c:107: reply_buf[59] = (calc_crc == expected_crc) ? STATUS_OK : STATUS_BAD_CRC;
+      0002CB ED               [12]  866 	mov	a,r5
+      0002CC B5 04 08         [24]  867 	cjne	a,ar4,00128$
+      0002CF EE               [12]  868 	mov	a,r6
+      0002D0 B5 07 04         [24]  869 	cjne	a,ar7,00128$
+      0002D3 7F 00            [12]  870 	mov	r7,#0x00
+      0002D5 80 02            [24]  871 	sjmp	00129$
+      0002D7                        872 00128$:
+      0002D7 7F 01            [12]  873 	mov	r7,#0x01
+      0002D9                        874 00129$:
+      0002D9 90r00r3B         [24]  875 	mov	dptr,#(_reply_buf + 0x003b)
+      0002DC EF               [12]  876 	mov	a,r7
+      0002DD F0               [24]  877 	movx	@dptr,a
+                                    878 ;	src/main.c:109: break;
+                                    879 ;	src/main.c:111: case CMD_REBOOT:
+      0002DE 80 1F            [24]  880 	sjmp	00120$
+      0002E0                        881 00118$:
+                                    882 ;	src/main.c:112: reply_buf[59] = STATUS_OK;
+      0002E0 90r00r3B         [24]  883 	mov	dptr,#(_reply_buf + 0x003b)
+      0002E3 E4               [12]  884 	clr	a
+      0002E4 F0               [24]  885 	movx	@dptr,a
+                                    886 ;	src/main.c:113: USB_SendReport(reply_buf, 64);
+      0002E5 75*00 40         [24]  887 	mov	_USB_SendReport_PARM_2,#0x40
+      0002E8 90r00r00         [24]  888 	mov	dptr,#_reply_buf
+      0002EB F5 F0            [12]  889 	mov	b,a
+      0002ED 12r00r00         [24]  890 	lcall	_USB_SendReport
+                                    891 ;	src/main.c:114: DelayMs(50);
+      0002F0 90 00 32         [24]  892 	mov	dptr,#0x0032
+      0002F3 12r00r00         [24]  893 	lcall	_DelayMs
+                                    894 ;	src/main.c:115: JumpToApp();
+                                    895 ;	src/main.c:116: return;
+                                    896 ;	src/main.c:118: default:
+      0002F6 02r00r2B         [24]  897 	ljmp	_JumpToApp
+      0002F9                        898 00119$:
+                                    899 ;	src/main.c:119: reply_buf[59] = STATUS_UNKNOWN;
+      0002F9 90r00r3B         [24]  900 	mov	dptr,#(_reply_buf + 0x003b)
+      0002FC 74 FF            [12]  901 	mov	a,#0xff
+      0002FE F0               [24]  902 	movx	@dptr,a
+                                    903 ;	src/main.c:121: }
+      0002FF                        904 00120$:
+                                    905 ;	src/main.c:123: USB_SendReport(reply_buf, 64);
+      0002FF 75*00 40         [24]  906 	mov	_USB_SendReport_PARM_2,#0x40
+      000302 90r00r00         [24]  907 	mov	dptr,#_reply_buf
+      000305 75 F0 00         [24]  908 	mov	b, #0x00
+      000308 12r00r00         [24]  909 	lcall	_USB_SendReport
+                                    910 ;	src/main.c:124: USB_ReleaseRx();
+                                    911 ;	src/main.c:125: }
+      00030B 02r00r00         [24]  912 	ljmp	_USB_ReleaseRx
+                                    913 ;------------------------------------------------------------
+                                    914 ;Allocation info for local variables in function 'main'
+                                    915 ;------------------------------------------------------------
+                                    916 ;button_pressed Allocated to registers r7 
+                                    917 ;first_word    Allocated to registers 
+                                    918 ;is_blank      Allocated to registers r6 
+                                    919 ;timeout       Allocated to registers 
+                                    920 ;stay_in_bootloader Allocated to registers r7 
+                                    921 ;------------------------------------------------------------
+                                    922 ;	src/main.c:127: void main(void) {
+                                    923 ;	-----------------------------------------
+                                    924 ;	 function main
+                                    925 ;	-----------------------------------------
+      00030E                        926 _main:
+                                    927 ;	src/main.c:129: P3_DIR &= ~(1 << BOOT_PIN_BIT);
+      00030E 53 B2 FB         [24]  928 	anl	_P3_DIR,#0xfb
+                                    929 ;	src/main.c:130: P3_PU  |=  (1 << BOOT_PIN_BIT);
+      000311 43 B3 04         [24]  930 	orl	_P3_PU,#0x04
+                                    931 ;	src/main.c:132: uint8_t button_pressed = ((P3 & (1 << BOOT_PIN_BIT)) == 0);
+      000314 74 04            [12]  932 	mov	a,#0x04
+      000316 55 B0            [12]  933 	anl	a,_P3
+      000318 FF               [12]  934 	mov	r7,a
+      000319 E4               [12]  935 	clr	a
+      00031A BF 00 01         [24]  936 	cjne	r7,#0x00,00157$
+      00031D 04               [12]  937 	inc	a
+      00031E                        938 00157$:
+      00031E FF               [12]  939 	mov	r7,a
+                                    940 ;	src/main.c:133: uint16_t first_word = IAP_ReadWord(0x0000);
+      00031F 90 00 00         [24]  941 	mov	dptr,#0x0000
+      000322 C0 07            [24]  942 	push	ar7
+      000324 12r00r00         [24]  943 	lcall	_IAP_ReadWord
+      000327 AD 82            [24]  944 	mov	r5, dpl
+      000329 AE 83            [24]  945 	mov	r6, dph
+      00032B D0 07            [24]  946 	pop	ar7
+                                    947 ;	src/main.c:134: uint8_t is_blank = (first_word == 0xFFFF);
+      00032D E4               [12]  948 	clr	a
+      00032E BD FF 04         [24]  949 	cjne	r5,#0xff,00159$
+      000331 BE FF 01         [24]  950 	cjne	r6,#0xff,00159$
+      000334 04               [12]  951 	inc	a
+      000335                        952 00159$:
+      000335 FE               [12]  953 	mov	r6,a
+                                    954 ;	src/main.c:137: USB_Init();
+      000336 C0 07            [24]  955 	push	ar7
+      000338 C0 06            [24]  956 	push	ar6
+      00033A 12r00r00         [24]  957 	lcall	_USB_Init
+      00033D D0 06            [24]  958 	pop	ar6
+      00033F D0 07            [24]  959 	pop	ar7
+                                    960 ;	src/main.c:141: uint8_t stay_in_bootloader = button_pressed || is_blank;
+      000341 EF               [12]  961 	mov	a,r7
+      000342 70 07            [24]  962 	jnz	00113$
+      000344 EE               [12]  963 	mov	a,r6
+      000345 70 04            [24]  964 	jnz	00113$
+                                    965 ;	assignBit
+      000347 C2*00            [12]  966 	clr	_main_sloc0_1_0
+      000349 80 02            [24]  967 	sjmp	00114$
+      00034B                        968 00113$:
+                                    969 ;	assignBit
+      00034B D2*00            [12]  970 	setb	_main_sloc0_1_0
+      00034D                        971 00114$:
+      00034D A2*00            [12]  972 	mov	c,_main_sloc0_1_0
+      00034F E4               [12]  973 	clr	a
+      000350 33               [12]  974 	rlc	a
+      000351 FF               [12]  975 	mov	r7,a
+                                    976 ;	src/main.c:143: while (1) {
+      000352 7B 00            [12]  977 	mov	r3,#0x00
+      000354 7C 00            [12]  978 	mov	r4,#0x00
+      000356 7D 00            [12]  979 	mov	r5,#0x00
+      000358 7E 00            [12]  980 	mov	r6,#0x00
+      00035A                        981 00108$:
+                                    982 ;	src/main.c:144: USB_Process();
+      00035A C0 07            [24]  983 	push	ar7
+      00035C C0 06            [24]  984 	push	ar6
+      00035E C0 05            [24]  985 	push	ar5
+      000360 C0 04            [24]  986 	push	ar4
+      000362 C0 03            [24]  987 	push	ar3
+      000364 12r00r00         [24]  988 	lcall	_USB_Process
+                                    989 ;	src/main.c:146: if (USB_Available()) {
+      000367 12r00r00         [24]  990 	lcall	_USB_Available
+      00036A E5 82            [12]  991 	mov	a, dpl
+      00036C D0 03            [24]  992 	pop	ar3
+      00036E D0 04            [24]  993 	pop	ar4
+      000370 D0 05            [24]  994 	pop	ar5
+      000372 D0 06            [24]  995 	pop	ar6
+      000374 D0 07            [24]  996 	pop	ar7
+      000376 60 19            [24]  997 	jz	00102$
+                                    998 ;	src/main.c:147: stay_in_bootloader = 1; // Handshake received, cancel timeout
+      000378 7F 01            [12]  999 	mov	r7,#0x01
+                                   1000 ;	src/main.c:148: ProcessPacket();
+      00037A C0 07            [24] 1001 	push	ar7
+      00037C C0 06            [24] 1002 	push	ar6
+      00037E C0 05            [24] 1003 	push	ar5
+      000380 C0 04            [24] 1004 	push	ar4
+      000382 C0 03            [24] 1005 	push	ar3
+      000384 12r00r38         [24] 1006 	lcall	_ProcessPacket
+      000387 D0 03            [24] 1007 	pop	ar3
+      000389 D0 04            [24] 1008 	pop	ar4
+      00038B D0 05            [24] 1009 	pop	ar5
+      00038D D0 06            [24] 1010 	pop	ar6
+      00038F D0 07            [24] 1011 	pop	ar7
+      000391                       1012 00102$:
+                                   1013 ;	src/main.c:151: if (!stay_in_bootloader) {
+      000391 EF               [12] 1014 	mov	a,r7
+      000392 70 C6            [24] 1015 	jnz	00108$
+                                   1016 ;	src/main.c:152: timeout++;
+      000394 0B               [12] 1017 	inc	r3
+      000395 BB 00 09         [24] 1018 	cjne	r3,#0x00,00165$
+      000398 0C               [12] 1019 	inc	r4
+      000399 BC 00 05         [24] 1020 	cjne	r4,#0x00,00165$
+      00039C 0D               [12] 1021 	inc	r5
+      00039D BD 00 01         [24] 1022 	cjne	r5,#0x00,00165$
+      0003A0 0E               [12] 1023 	inc	r6
+      0003A1                       1024 00165$:
+                                   1025 ;	src/main.c:153: if (timeout > 400000UL) { // Approx 1.5s timeout at 24MHz
+      0003A1 C3               [12] 1026 	clr	c
+      0003A2 74 80            [12] 1027 	mov	a,#0x80
+      0003A4 9B               [12] 1028 	subb	a,r3
+      0003A5 74 1A            [12] 1029 	mov	a,#0x1a
+      0003A7 9C               [12] 1030 	subb	a,r4
+      0003A8 74 06            [12] 1031 	mov	a,#0x06
+      0003AA 9D               [12] 1032 	subb	a,r5
+      0003AB E4               [12] 1033 	clr	a
+      0003AC 9E               [12] 1034 	subb	a,r6
+      0003AD 50 AB            [24] 1035 	jnc	00108$
+                                   1036 ;	free result
+                                   1037 ;	src/main.c:154: JumpToApp();
+      0003AF C0 07            [24] 1038 	push	ar7
+      0003B1 C0 06            [24] 1039 	push	ar6
+      0003B3 C0 05            [24] 1040 	push	ar5
+      0003B5 C0 04            [24] 1041 	push	ar4
+      0003B7 C0 03            [24] 1042 	push	ar3
+      0003B9 12r00r2B         [24] 1043 	lcall	_JumpToApp
+      0003BC D0 03            [24] 1044 	pop	ar3
+      0003BE D0 04            [24] 1045 	pop	ar4
+      0003C0 D0 05            [24] 1046 	pop	ar5
+      0003C2 D0 06            [24] 1047 	pop	ar6
+      0003C4 D0 07            [24] 1048 	pop	ar7
+                                   1049 ;	src/main.c:158: }
+      0003C6 02r03r5A         [24] 1050 	ljmp	00108$
+                                   1051 	.area CSEG    (CODE)
+                                   1052 	.area CONST   (CODE)
+                                   1053 	.area XINIT   (CODE)
+                                   1054 	.area CABS    (ABS,CODE)
