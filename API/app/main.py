@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.schemas import CompileRequest, CompileErrorResponse, ServerErrorResponse
+from app.schemas import CompileRequest, CompileErrorResponse, ServerErrorResponse, MAX_CODE_SIZE_BYTES
 from app.compiler import run_compilation, CompilationException, TimeoutException
 
 # Configure logging
@@ -139,6 +139,16 @@ async def compile_code(request: Request):
                 "status": "error",
                 "message": "Invalid input",
                 "detail": "Field 'code' is empty or missing."
+            }
+        )
+
+    if len(code.encode("utf-8")) > MAX_CODE_SIZE_BYTES:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "status": "error",
+                "message": "Invalid input",
+                "detail": f"Field 'code' exceeds maximum allowed size of {MAX_CODE_SIZE_BYTES} bytes (64KB)."
             }
         )
 

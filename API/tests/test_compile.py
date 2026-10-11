@@ -106,3 +106,58 @@ def test_compiler_pipeline_cleanup_on_error():
     assert len(tmp_dirs_created) == 1
     # Verify temp dir was deleted in finally block
     assert not tmp_dirs_created[0].exists()
+
+
+def test_ensure_usb_product_descriptor_patch(tmp_path):
+    """Verify that ensure_usb_product_descriptor detects and patches default descriptors."""
+    from app.compiler import ensure_usb_product_descriptor
+
+    # Create dummy core directory structure in tmp_path
+    core_dir = tmp_path / "Arduino15" / "packages" / "CH55xDuino" / "hardware" / "mcs51" / "0.0.26" / "cores" / "ch55xduino"
+    core_dir.mkdir(parents=True)
+    usb_constant = core_dir / "USBconstant.c"
+
+    original_c = """
+    __code uint16_t ProductDescriptor[] = {
+        (((10 + 1) * 2) | (DTYPE_String << 8)),
+        'C', 'H', '5', '5', 'x', 'd', 'u', 'i', 'n', 'o',
+    };
+    """
+    usb_constant.write_text(original_c, encoding="utf-8")
+
+    with patch.dict(os.environ, {"LOCALAPPDATA": str(tmp_path)}):
+        ensure_usb_product_descriptor()
+
+    updated = usb_constant.read_text(encoding="utf-8")
+    assert "idan's DevBoard" in updated
+    assert "'i'" in updated and "'d'" in updated and "'a'" in updated and "'n'" in updated
+
+
+def test_regular_code_written_without_wrapper():
+    """Verify that user code is written directly without injecting student wrappers."""
+    captured_code = []
+
+    def fake_subprocess_run(*args, **kwargs):
+        cmd = args[0]
+        sketch_dir = Path(cmd[-1])
+        sketch_file = sketch_dir / "sketch.ino"
+        captured_code.append(sketch_file.read_text(encoding="utf-8"))
+
+        # create a dummy out file
+        out_dir = Path(cmd[cmd.index("--output-dir") + 1])
+        dummy_bin = out_dir / "sketch.ino.bin"
+        dummy_bin.write_bytes(b"\x12\x34")
+
+        mock_res = MagicMock()
+        mock_res.returncode = 0
+        return mock_res
+
+    student_code = "void student_setup() {}\nvoid student_loop() {}"
+    with patch("subprocess.run", side_effect=fake_subprocess_run):
+        run_compilation(student_code)
+
+    assert len(captured_code) == 1
+    # Check that wrapper void setup() / void loop() was NOT injected
+    assert "void setup() {\n  student_setup();\n}" not in captured_code[0]
+    assert captured_code[0] == student_code
+

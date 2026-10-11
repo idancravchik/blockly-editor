@@ -14,7 +14,15 @@ RUN curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/inst
 # Configure arduino-cli and pre-install CH55xDuino core package at build time
 RUN arduino-cli config init && \
     arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/refs/heads/ch55xduino/package_ch55xduino_mcs51_index.json && \
-    arduino-cli core install CH55xDuino:mcs51 --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/refs/heads/ch55xduino/package_ch55xduino_mcs51_index.json
+    arduino-cli core install CH55xDuino:mcs51 --additional-urls https://raw.githubusercontent.com/DeqingSun/ch55xduino/refs/heads/ch55xduino/package_ch55xduino_mcs51_index.json && \
+    python3 -c '\
+import glob, re; \
+pattern = r"__code\s+uint16_t\s+ProductDescriptor\[\]\s*=\s*\{[^}]+\};"; \
+replacement = """__code uint16_t ProductDescriptor[] = {\\n    (((15 + 1) * 2) | (DTYPE_String << 8)),\\n    \x27i\x27, \x27d\x27, \x27a\x27, \x27n\x27, \x27\\\x27\x27, \x27s\x27, \x27 \x27, \x27D\x27, \x27e\x27, \x27v\x27, \x27B\x27, \x27o\x27, \x27a\x27, \x27r\x27, \x27d\x27\\n};"""; \
+for f in glob.glob("/root/.arduino15/packages/CH55xDuino/hardware/mcs51/*/cores/ch55xduino/USBconstant.c"): \
+    c = open(f).read(); \
+    open(f, "w").write(re.sub(pattern, replacement, c)); \
+    print("Patched USB descriptor in", f)'
 # Set working directory
 WORKDIR /workspace
 

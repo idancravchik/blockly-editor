@@ -27,6 +27,7 @@ htmlcov/
 out/
 tmp/
 temp/
+scratch/
 
 # Environment variables & secrets
 .env

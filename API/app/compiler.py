@@ -16,6 +16,64 @@ CH552_FQBN = os.getenv(
 )
 COMPILATION_TIMEOUT_SECONDS = float(os.getenv("COMPILATION_TIMEOUT_SECONDS", "60.0"))
 
+USB_PRODUCT_DESCRIPTOR_REPLACEMENT = """__code uint16_t ProductDescriptor[] = {
+    // Product String Descriptor: "idan's DevBoard"
+    (((15 + 1) * 2) | (DTYPE_String << 8)),
+    'i',
+    'd',
+    'a',
+    'n',
+    '\\'',
+    's',
+    ' ',
+    'D',
+    'e',
+    'v',
+    'B',
+    'o',
+    'a',
+    'r',
+    'd',
+};"""
+
+
+def ensure_usb_product_descriptor() -> None:
+    """
+    Ensures that the CH55xduino core's USBconstant.c has the USB Product Descriptor
+    configured as "idan's DevBoard".
+    """
+    candidates = []
+    local_app_data = os.getenv("LOCALAPPDATA")
+    if local_app_data:
+        candidates.append(Path(local_app_data) / "Arduino15" / "packages" / "CH55xDuino" / "hardware" / "mcs51")
+    candidates.append(Path.home() / ".arduino15" / "packages" / "CH55xDuino" / "hardware" / "mcs51")
+    candidates.append(Path("/root/.arduino15/packages/CH55xDuino/hardware/mcs51"))
+
+    import re
+    for base in candidates:
+        if base.exists():
+            for usb_file in base.glob("**/cores/ch55xduino/USBconstant.c"):
+                try:
+                    content = usb_file.read_text(encoding="utf-8", errors="ignore")
+                    if "idan's DevBoard" not in content:
+                        new_content = re.sub(
+                            r"__code\s+uint16_t\s+ProductDescriptor\[\]\s*=\s*\{[^}]+\};",
+                            USB_PRODUCT_DESCRIPTOR_REPLACEMENT,
+                            content,
+                        )
+                        if new_content != content:
+                            usb_file.write_text(new_content, encoding="utf-8")
+                            logger.info(f"Set USB Product Descriptor to 'idan\\'s DevBoard' in {usb_file}")
+                except Exception as e:
+                    logger.warning(f"Could not update USBconstant.c at {usb_file}: {e}")
+
+
+# Run on startup
+try:
+    ensure_usb_product_descriptor()
+except Exception as e:
+    logger.warning(f"Failed to verify USB product descriptor on startup: {e}")
+
 
 class CompilationException(Exception):
     def __init__(self, message: str, errors: str, status_code: int = 400):
@@ -34,7 +92,7 @@ class TimeoutException(Exception):
 
 def run_compilation(code: str) -> bytes:
     """
-    Compiles Arduino C/C++ source code targeting the CH552 microcontroller using arduino-cli.
+    Compiles regular Arduino C/C++ source code targeting the CH552 microcontroller using arduino-cli.
     
     Returns:
         bytes: The binary raw bytes of the generated binary/hex file.
@@ -44,6 +102,7 @@ def run_compilation(code: str) -> bytes:
         TimeoutException: If compilation takes longer than timeout limit.
         Exception: For unexpected file system or execution failures.
     """
+    ensure_usb_product_descriptor()
     request_id = str(uuid.uuid4())
     
     base_tmp_str = os.getenv("TMPDIR") or ("/tmp" if os.path.exists("/tmp") else tempfile.gettempdir())
@@ -57,10 +116,6 @@ def run_compilation(code: str) -> bytes:
     try:
         sketch_dir.mkdir(parents=True, exist_ok=True)
         out_dir.mkdir(parents=True, exist_ok=True)
-
-        # אם הקוד מכיל student_setup אך לא מכיל void setup, נזריק עטיפה אוטומטית ל-setup ו-loop
-        if "student_setup" in code and "void setup" not in code:
-            code += "\n\nvoid setup() {\n  student_setup();\n}\n\nvoid loop() {\n  student_loop();\n}\n"
 
         with open(sketch_file, "w", encoding="utf-8") as f:
             f.write(code)

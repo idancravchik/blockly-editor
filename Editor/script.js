@@ -722,12 +722,12 @@ javascript.javascriptGenerator.finish = function(code) {
 ${defines}
 
 // === פעולת Setup ===
-void student_setup() {
+void setup() {
   ${setups}
 }
 
 // === פעולת Loop ===
-void student_loop() {
+void loop() {
 ${javascript.javascriptGenerator.prefixLines(code, '  ')}
 }
 `;

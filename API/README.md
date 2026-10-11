@@ -10,6 +10,8 @@ Includes built-in support for USB CDC and automatic 1200-baud reset (`CH55xDuino
 
 **Live API URL:** https://web-compiler-api.onrender.com
 
+> 📖 **Looking for full integration guides & examples?** See the comprehensive [USAGE.md](file:///c:/Users/jnux9/OneDrive/שולחן%20העבודה/DevboxV1/API/USAGE.md) documentation.
+
 ---
 
 ## 📡 API Endpoints
@@ -287,6 +289,7 @@ API/
 │   └── test_compile.py   # Unit tests
 ├── Dockerfile            # Container configuration
 ├── requirements.txt      # Python dependencies
+├── USAGE.md             # Detailed API usage and integration guide
 └── README.md            # This file
 ```
 
