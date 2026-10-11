@@ -42,12 +42,14 @@ def ensure_usb_product_descriptor() -> None:
     Ensures that the CH55xduino core's USBconstant.c has the USB Product Descriptor
     configured as "idan's DevBoard".
     """
-    candidates = []
+    candidates = [
+        Path.home() / ".arduino15",
+        Path("/root/.arduino15"),
+        Path("/home"),
+    ]
     local_app_data = os.getenv("LOCALAPPDATA")
     if local_app_data:
-        candidates.append(Path(local_app_data) / "Arduino15" / "packages" / "CH55xDuino" / "hardware" / "mcs51")
-    candidates.append(Path.home() / ".arduino15" / "packages" / "CH55xDuino" / "hardware" / "mcs51")
-    candidates.append(Path("/root/.arduino15/packages/CH55xDuino/hardware/mcs51"))
+        candidates.append(Path(local_app_data) / "Arduino15")
 
     import re
     for base in candidates:
