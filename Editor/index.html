@@ -17,6 +17,10 @@
           <div class="toolbar">
               <button id="copyBtn" class="btn btn-secondary">📋 העתק קוד</button>
               <button id="downloadBtn" class="btn btn-secondary">💾 הורד קוד C</button>
+              <select id="formatSelect" class="btn btn-secondary" style="cursor: pointer; font-weight: bold; padding: 8px 12px;">
+                  <option value="bin">קובץ BIN (.bin)</option>
+                  <option value="hex">קובץ HEX (.hex)</option>
+              </select>
               <button id="compileBtn" class="btn btn-success">⚡ קמפל קוד (API)</button>
           </div>
       </div>
@@ -93,15 +97,19 @@
                   return;
               }
 
-              showStatus('שולח לקומפילציה בשרת API...', 'info');
+              const formatSelect = document.getElementById('formatSelect');
+              const selectedFormat = formatSelect ? formatSelect.value : 'bin';
+              const ext = selectedFormat === 'hex' ? 'hex' : 'bin';
+
+              showStatus(`שולח לקומפילציה בשרת API (פורמט ${ext.toUpperCase()})...`, 'info');
 
               try {
-                  const response = await fetch('http://localhost:8000/compile', {
+                  const response = await fetch(`http://localhost:8000/compile?format=${selectedFormat}`, {
                       method: 'POST',
                       headers: {
                           'Content-Type': 'application/json'
                       },
-                      body: JSON.stringify({ code: code })
+                      body: JSON.stringify({ code: code, format: selectedFormat })
                   });
 
                   if (response.ok) {
@@ -109,10 +117,10 @@
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
                       a.href = url;
-                      a.download = 'firmware.bin';
+                      a.download = `firmware.${ext}`;
                       a.click();
                       URL.revokeObjectURL(url);
-                      showStatus('הקומפילציה הושלמה בהצלחה! קובץ firmware.bin יורד.', 'success');
+                      showStatus(`הקומפילציה הושלמה בהצלחה! קובץ firmware.${ext} יורד.`, 'success');
                   } else {
                       const errData = await response.json();
                       const errMsg = errData.errors || errData.message || 'שגיאת קומפילציה לא ידועה';

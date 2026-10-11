@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from fastapi import FastAPI, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -97,26 +98,33 @@ async def health_check():
     "/compile",
     responses={
         200: {
-            "content": {"application/octet-stream": {}},
-            "description": "Raw binary (.bin) file download."
+            "content": {
+                "application/octet-stream": {},
+                "text/plain": {}
+            },
+            "description": "Compiled firmware download (.bin or .hex)."
         },
         400: {"model": CompileErrorResponse, "description": "Compilation error"},
         422: {"model": ServerErrorResponse, "description": "Invalid input payload"},
         500: {"model": ServerErrorResponse, "description": "Server or timeout error"}
     }
 )
-async def compile_code(request: Request):
+async def compile_code(request: Request, format: Optional[str] = None):
     """
     Compiles Arduino C/C++ source code for CH552 microcontroller.
     Supports both application/json and text/plain payloads (to prevent CORS preflight issues).
+    Allows choosing output format ('bin' or 'hex') via query parameter or JSON body.
     """
     content_type = request.headers.get("content-type", "")
     code = ""
+    body_format = ""
 
     if "application/json" in content_type:
         try:
             body = await request.json()
-            code = body.get("code", "") if isinstance(body, dict) else ""
+            if isinstance(body, dict):
+                code = body.get("code", "")
+                body_format = body.get("format", "") or body.get("output_format", "")
         except Exception:
             code = ""
     else:
@@ -127,6 +135,7 @@ async def compile_code(request: Request):
             try:
                 data = json.loads(body_str)
                 code = data.get("code", "")
+                body_format = data.get("format", "") or data.get("output_format", "")
             except Exception:
                 code = body_str
         else:
@@ -152,12 +161,29 @@ async def compile_code(request: Request):
             }
         )
 
-    binary_bytes = run_compilation(code)
-    
+    target_format = (
+        format
+        or body_format
+        or request.query_params.get("output")
+        or request.query_params.get("type")
+        or "bin"
+    ).lower().strip()
+    if target_format not in ["bin", "hex"]:
+        target_format = "bin"
+
+    result = run_compilation(code, output_format=target_format)
+    if isinstance(result, tuple):
+        output_bytes, filename = result
+    else:
+        output_bytes = result
+        filename = f"firmware.{target_format}"
+
+    media_type = "application/octet-stream" if target_format == "bin" else "text/plain; charset=utf-8"
+
     return Response(
-        content=binary_bytes,
-        media_type="application/octet-stream",
+        content=output_bytes,
+        media_type=media_type,
         headers={
-            "Content-Disposition": 'attachment; filename="firmware.bin"'
+            "Content-Disposition": f'attachment; filename="{filename}"'
         }
     )

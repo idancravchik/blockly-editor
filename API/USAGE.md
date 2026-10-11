@@ -122,18 +122,25 @@ Host: web-compiler-api.onrender.com
 
 ### `POST /compile`
 
-Primary compilation endpoint. Receives source code and returns the compiled binary firmware.
+Primary compilation endpoint. Receives source code and returns the compiled binary or Intel HEX firmware.
+
+#### Query Parameters
+- `format` *(optional)*: Output file format — `'bin'` (default) or `'hex'`.
+  - `POST /compile?format=bin` $\rightarrow$ downloads `firmware.bin`
+  - `POST /compile?format=hex` $\rightarrow$ downloads `firmware.hex`
 
 #### Request Headers
 - `Content-Type`: `application/json` (recommended) or `text/plain`
-- `Accept`: `application/octet-stream, application/json`
+- `Accept`: `application/octet-stream, text/plain, application/json`
 
 #### Request Body
 ```json
 {
-  "code": "void setup() {\n  pinMode(33, OUTPUT);\n}\nvoid loop() {\n  digitalWrite(33, HIGH);\n  delay(500);\n  digitalWrite(33, LOW);\n  delay(500);\n}"
+  "code": "void setup() {\n  pinMode(33, OUTPUT);\n}\nvoid loop() {\n  digitalWrite(33, HIGH);\n  delay(500);\n  digitalWrite(33, LOW);\n  delay(500);\n}",
+  "format": "bin"
 }
 ```
+*(The `"format"` field inside JSON is optional; can be `"bin"` or `"hex"`).*
 
 ---
 
@@ -146,15 +153,17 @@ The API supports two request formats on `POST /compile`:
 1. **Standard JSON (`application/json`):**
    ```json
    {
-     "code": "#include <Arduino.h>\nvoid setup() {} void loop() {}"
+     "code": "#include <Arduino.h>\nvoid setup() {} void loop() {}",
+     "format": "hex"
    }
    ```
 2. **Plain Text (`text/plain`):**
-   The raw source code can be sent directly as text or as a raw JSON string. This prevents browsers from issuing CORS preflight `OPTIONS` requests when cross-origin limitations are strict.
+   The raw source code can be sent directly as text or as a raw JSON string. When using plain text, the output format can be specified via the query parameter (e.g. `/compile?format=hex`). This prevents browsers from issuing CORS preflight `OPTIONS` requests when cross-origin limitations are strict.
 
 #### Constraints
 - **Maximum Code Size:** **64 KB (65,536 bytes)**. Code larger than 64 KB returns `HTTP 422`.
 - **Minimum Code Size:** Non-empty string. Empty or whitespace-only code returns `HTTP 422`.
+- **Supported Output Formats:** `'bin'` (raw binary bytes) or `'hex'` (ASCII Intel HEX).
 - **Execution Timeout:** **5.0 – 60.0 seconds** (configurable via environment variables; default 5s in Docker container).
 
 ---
@@ -163,10 +172,17 @@ The API supports two request formats on `POST /compile`:
 
 Returned when `arduino-cli` completes with exit code `0`.
 
+#### When requesting BIN format (`format=bin` or default):
 - **HTTP Status:** `200 OK`
 - **Content-Type:** `application/octet-stream`
 - **Content-Disposition:** `attachment; filename="firmware.bin"`
-- **Response Body:** Binary byte stream of the generated firmware file (`.bin`).
+- **Response Body:** Raw binary bytes of the flash image (`.bin`).
+
+#### When requesting HEX format (`format=hex`):
+- **HTTP Status:** `200 OK`
+- **Content-Type:** `text/plain; charset=utf-8`
+- **Content-Disposition:** `attachment; filename="firmware.hex"`
+- **Response Body:** ASCII Intel HEX format records (`:10...`).
 
 ---
 
@@ -278,32 +294,33 @@ This is the standard integration pattern used by web applications (e.g. `Editor/
 
 ```javascript
 /**
- * Compiles Arduino C/C++ code and triggers a browser file download of firmware.bin
+ * Compiles Arduino C/C++ code and triggers a browser file download of firmware.bin or firmware.hex
  * @param {string} sourceCode 
+ * @param {'bin'|'hex'} format Output format ('bin' or 'hex')
  * @param {string} apiUrl 
  */
-async function compileAndDownload(sourceCode, apiUrl = 'https://web-compiler-api.onrender.com') {
+async function compileAndDownload(sourceCode, format = 'bin', apiUrl = 'https://web-compiler-api.onrender.com') {
   try {
-    const response = await fetch(`${apiUrl}/compile`, {
+    const response = await fetch(`${apiUrl}/compile?format=${format}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ code: sourceCode })
+      body: JSON.stringify({ code: sourceCode, format: format })
     });
 
     if (response.ok) {
-      // 200 OK: Process raw binary blob
+      // 200 OK: Process downloaded file (blob)
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = 'firmware.bin';
+      link.download = `firmware.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
-      console.log('Firmware compiled and downloaded successfully.');
+      console.log(`Firmware (${format.toUpperCase()}) compiled and downloaded successfully.`);
     } else {
       // Error: Parse JSON response
       const err = await response.json();

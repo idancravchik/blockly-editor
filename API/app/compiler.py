@@ -92,12 +92,65 @@ class TimeoutException(Exception):
         super().__init__(message)
 
 
-def run_compilation(code: str) -> bytes:
+def intel_hex_to_bin(hex_str: str) -> bytes:
+    """Converts ASCII Intel HEX string to raw binary bytes."""
+    memory = {}
+    max_addr = 0
+    for line in hex_str.splitlines():
+        line = line.strip()
+        if not line.startswith(":"):
+            continue
+        try:
+            length = int(line[1:3], 16)
+            addr = int(line[3:7], 16)
+            rtype = int(line[7:9], 16)
+            if rtype == 0:  # Data record
+                data = bytes.fromhex(line[9 : 9 + length * 2])
+                for i, b in enumerate(data):
+                    memory[addr + i] = b
+                    if addr + i > max_addr:
+                        max_addr = addr + i
+            elif rtype == 1:  # EOF
+                break
+        except Exception:
+            continue
+
+    if not memory:
+        return b""
+    buf = bytearray([0xFF] * (max_addr + 1))
+    for addr, val in memory.items():
+        buf[addr] = val
+    return bytes(buf)
+
+
+def bin_to_intel_hex(bin_data: bytes) -> bytes:
+    """Converts raw binary bytes to ASCII Intel HEX bytes."""
+    lines = []
+    chunk_size = 16
+    for addr in range(0, len(bin_data), chunk_size):
+        chunk = bin_data[addr : addr + chunk_size]
+        length = len(chunk)
+        rtype = 0x00
+        addr_h = (addr >> 8) & 0xFF
+        addr_l = addr & 0xFF
+        cksum = length + addr_h + addr_l + rtype + sum(chunk)
+        cksum = ((~cksum) + 1) & 0xFF
+        data_hex = "".join(f"{b:02X}" for b in chunk)
+        lines.append(f":{length:02X}{addr:04X}{rtype:02X}{data_hex}{cksum:02X}")
+    lines.append(":00000001FF\n")
+    return ("\n".join(lines)).encode("utf-8")
+
+
+def run_compilation(code: str, output_format: str = "bin") -> Tuple[bytes, str]:
     """
-    Compiles regular Arduino C/C++ source code targeting the CH552 microcontroller using arduino-cli.
+    Compiles Arduino C/C++ source code targeting the CH552 microcontroller using arduino-cli.
     
+    Args:
+        code: Source code string to compile.
+        output_format: 'bin' for raw binary bytes, or 'hex' for Intel HEX format.
+        
     Returns:
-        bytes: The binary raw bytes of the generated binary/hex file.
+        Tuple[bytes, str]: A tuple of (file_bytes, filename) where filename is 'firmware.bin' or 'firmware.hex'.
         
     Raises:
         CompilationException: If compilation fails (exit code != 0).
@@ -105,6 +158,9 @@ def run_compilation(code: str) -> bytes:
         Exception: For unexpected file system or execution failures.
     """
     ensure_usb_product_descriptor()
+    fmt = (output_format or "bin").lower().strip()
+    if fmt not in ["bin", "hex"]:
+        fmt = "bin"
     request_id = str(uuid.uuid4())
     
     base_tmp_str = os.getenv("TMPDIR") or ("/tmp" if os.path.exists("/tmp") else tempfile.gettempdir())
@@ -153,22 +209,34 @@ def run_compilation(code: str) -> bytes:
                 status_code=400
             )
 
-        # Search for generated .bin, .hex, or any other output file inside output directory
-        bin_files = list(out_dir.glob("*.bin")) + list(out_dir.glob("*.hex")) + list(out_dir.glob("*.cmd"))
-        
-        # Fallback to any generated file that is not a directory
-        if not bin_files:
-            bin_files = [f for f in out_dir.glob("*") if f.is_file()]
+        hex_files = list(out_dir.glob("*.hex"))
+        bin_files = list(out_dir.glob("*.bin"))
 
-        if not bin_files:
-            logger.error(f"[{request_id}] Compilation exit code 0 but no binary/hex file created in {out_dir}")
-            raise Exception("Compilation reported success, but output binary file was not generated.")
-
-        binary_path = bin_files[0]
-        with open(binary_path, "rb") as f:
-            binary_data = f.read()
-
-        return binary_data
+        if fmt == "hex":
+            if hex_files:
+                file_data = hex_files[0].read_bytes()
+            elif bin_files:
+                file_data = bin_to_intel_hex(bin_files[0].read_bytes())
+            else:
+                other_files = [f for f in out_dir.glob("*") if f.is_file()]
+                if not other_files:
+                    raise Exception("Compilation reported success, but output file was not generated.")
+                file_data = other_files[0].read_bytes()
+            return file_data, "firmware.hex"
+        else:  # bin
+            if bin_files:
+                file_data = bin_files[0].read_bytes()
+            elif hex_files:
+                hex_str = hex_files[0].read_text(encoding="ascii", errors="ignore")
+                file_data = intel_hex_to_bin(hex_str)
+                if not file_data:
+                    file_data = hex_files[0].read_bytes()
+            else:
+                other_files = [f for f in out_dir.glob("*") if f.is_file()]
+                if not other_files:
+                    raise Exception("Compilation reported success, but output file was not generated.")
+                file_data = other_files[0].read_bytes()
+            return file_data, "firmware.bin"
 
     finally:
         # Cleanup temporary workspace

@@ -46,6 +46,22 @@ def test_compile_success_mocked():
         assert response.content == fake_bin
 
 
+def test_compile_hex_format_mocked():
+    fake_hex = b":03000000020000F7\n:00000001FF\n"
+    with patch("app.main.run_compilation", return_value=(fake_hex, "firmware.hex")):
+        # Test via query parameter
+        response = client.post("/compile?format=hex", json={"code": VALID_CODE})
+        assert response.status_code == 200
+        assert "firmware.hex" in response.headers["content-disposition"]
+        assert response.content == fake_hex
+
+        # Test via json body
+        response2 = client.post("/compile", json={"code": VALID_CODE, "format": "hex"})
+        assert response2.status_code == 200
+        assert "firmware.hex" in response2.headers["content-disposition"]
+        assert response2.content == fake_hex
+
+
 def test_compile_error_mocked():
     error_msg = "sketch.ino: In function 'void setup()':\nsketch.ino:3:3: error: 'degitalWrite' was not declared"
     with patch("app.main.run_compilation", side_effect=CompilationException("Compilation failed", error_msg, 400)):
@@ -160,4 +176,17 @@ def test_regular_code_written_without_wrapper():
     # Check that wrapper void setup() / void loop() was NOT injected
     assert "void setup() {\n  student_setup();\n}" not in captured_code[0]
     assert captured_code[0] == student_code
+
+
+def test_hex_and_bin_conversion_utilities():
+    """Verify intel_hex_to_bin and bin_to_intel_hex correctly parse and format data."""
+    from app.compiler import intel_hex_to_bin, bin_to_intel_hex
+
+    raw_data = bytes([0x01, 0x02, 0x03, 0x04, 0x05])
+    hex_bytes = bin_to_intel_hex(raw_data)
+    assert hex_bytes.startswith(b":")
+    assert b":00000001FF" in hex_bytes
+
+    recovered_bin = intel_hex_to_bin(hex_bytes.decode("ascii"))
+    assert recovered_bin[:len(raw_data)] == raw_data
 
