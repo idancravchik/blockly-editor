@@ -7,10 +7,10 @@ This guide provides step-by-step instructions for importing and integrating the 
 ## 1. Project Prerequisites
 
 Ensure your Android project is configured with modern toolchains:
-- **Android Studio**: Hedgehog (2023.1.1) or newer (Jellyfish, Koala, Ladybug, Meerkat)
-- **Android Gradle Plugin (AGP)**: `8.0.0` or newer (recommended `8.3.0`+)
-- **Gradle**: `8.0`+ (recommended `8.7`)
-- **JDK**: Java 17 (Eclipse Temurin, OpenJDK, or Android Studio JBR 17)
+- **Android Studio**: Quail 3 (2026.1.3), Koala, Ladybug, Meerkat, or newer
+- **Android Gradle Plugin (AGP)**: `9.3.2` (or `8.3.0`+)
+- **Gradle**: `9.5.0` (or `8.7`+)
+- **JDK / JBR**: Java 17, 21, or 25 (bundled Android Studio JBR)
 - **Compile SDK**: `compileSdk 34` (Android 14) or newer
 - **Minimum SDK**: `minSdk 21` (Android 5.0 Lollipop) or newer
 
