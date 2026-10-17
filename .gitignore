@@ -47,3 +47,16 @@ scratch/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Reference repos (local only)
+/blockly for android/
+
+# Android & Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+*.apk
+*.aab
+captures/
+
