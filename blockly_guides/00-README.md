@@ -20,6 +20,7 @@ This documentation series covers the complete lifecycle of developing a visual b
 | **08** | [**Saving & Loading Workspaces**](file:///c:/Users/jnux9/OneDrive/שולחן%20העבודה/DevboxV1/blockly_guides/08-saving-and-loading-workspaces.md) | Serializing blocks to XML via `BlocklyXmlHelper`, saving to internal storage or databases, autosave patterns, and restoring saved workspaces on startup. |
 | **09** | [**Native Styling, Themes & Touch UX**](file:///c:/Users/jnux9/OneDrive/שולחן%20העבודה/DevboxV1/blockly_guides/09-mobile-and-touch-optimizations.md) | Customizing 9-patch block assets (`PatchManager`), block styles, multi-touch pinch-to-zoom, fling velocity, trash can drag animations, and DPI scaling. |
 | **10** | [**Complete Working Starter Example**](file:///c:/Users/jnux9/OneDrive/שולחן%20העבודה/DevboxV1/blockly_guides/10-complete-working-starter-example.md) | A complete, copy-pasteable minimal Android Studio project: `build.gradle`, `MainActivity.java` extending `AbstractBlocklyActivity`, toolbox XML, custom blocks JSON, and an Arduino code generator. |
+| **11** | [**Step-by-Step 3-Blocks External Demo**](file:///c:/Users/jnux9/OneDrive/שולחן%20העבודה/DevboxV1/blockly_guides/11-step-by-step-3-blocks-external-library-demo.md) | Quickstart tutorial creating a new Android Studio project from scratch, importing the library as an external dependency, defining 3 custom blocks (LED, Delay, Loop), and generating C code. |
 
 ---
 

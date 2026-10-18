@@ -1419,7 +1419,7 @@ public class Block extends Observable<Block.Observer> {
 
         private void removeSelf() {
             // Don't change the listener while the listener list is being processed.
-            new Handler().post(new Runnable() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
                     mController.removeCallback(MemSafeEventsCallback.this);

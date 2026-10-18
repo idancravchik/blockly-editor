@@ -16,6 +16,7 @@
 package com.google.blockly.android.ui.vertical;
 
 import android.content.Context;
+import com.google.blockly.android.R;
 import android.graphics.drawable.Drawable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;

@@ -18,7 +18,10 @@ package com.google.blockly.android.ui.fieldview;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 import android.util.AttributeSet;
@@ -69,6 +72,9 @@ public class BasicFieldImageView extends androidx.appcompat.widget.AppCompatImag
             }
         }
     };
+
+    private static final ExecutorService sImageExecutor = Executors.newCachedThreadPool();
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
 
     protected FieldImage mImageField;
     protected Object mImageFieldLock = new Object();
@@ -138,38 +144,42 @@ public class BasicFieldImageView extends androidx.appcompat.widget.AppCompatImag
     // TODO(#44): Provide a default image if the image loading fails.
     protected void startLoadingImage(final String source) {
         // Do I/O in the background
-        new AsyncTask<String, Void, Bitmap>() {
+        sImageExecutor.execute(new Runnable() {
             @Override
-            protected Bitmap doInBackground(String... strings) {
+            public void run() {
+                Bitmap bitmapResult = null;
                 try {
                     InputStream stream = getStreamForSource(source);
                     if (stream != null) {
                         try {
-                            return BitmapFactory.decodeStream(stream);
+                            bitmapResult = BitmapFactory.decodeStream(stream);
                         } finally {
                             stream.close();
                         }
+                    } else {
+                        Log.w(TAG, "Unable to load image \"" + source + "\"");
                     }
-                    Log.w(TAG, "Unable to load image \"" + source + "\"");
                 } catch (IOException e) {
                     Log.w(TAG, "Unable to load image \"" + source + "\"", e);
                 }
-                return null;
-            }
 
-            @Override
-            protected void onPostExecute(Bitmap bitmap) {
-                if (bitmap != null) {
-                    setImageBitmap(bitmap);
-                    mImageSrc = source;
-                    updateViewSize();
-                } else {
-                    // TODO(#44): identify and bundle as a resource a suitable default
-                    // "cannot load" bitmap.
-                }
-                requestLayout();
+                final Bitmap bitmap = bitmapResult;
+                mMainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (bitmap != null) {
+                            setImageBitmap(bitmap);
+                            mImageSrc = source;
+                            updateViewSize();
+                        } else {
+                            // TODO(#44): identify and bundle as a resource a suitable default
+                            // "cannot load" bitmap.
+                        }
+                        requestLayout();
+                    }
+                });
             }
-        }.execute(source);
+        });
     }
 
     @VisibleForTesting

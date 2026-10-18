@@ -12,8 +12,14 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,11 +49,41 @@ public class Ch55xHidFlasher {
     private final Context context;
     private final UsbManager usbManager;
     private final ExecutorService executor;
+    private final Handler mainHandler;
 
     public Ch55xHidFlasher(Context context) {
         this.context = context.getApplicationContext();
         this.usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         this.executor = Executors.newSingleThreadExecutor();
+        this.mainHandler = new Handler(Looper.getMainLooper());
+    }
+
+    /**
+     * Safely wraps callbacks so they are always delivered on Android's Main (UI) thread.
+     */
+    private FlasherCallback wrapMainThread(FlasherCallback callback) {
+        if (callback == null) return null;
+        return new FlasherCallback() {
+            @Override
+            public void onProgress(int percent, int currentBytes, int totalBytes) {
+                mainHandler.post(() -> callback.onProgress(percent, currentBytes, totalBytes));
+            }
+
+            @Override
+            public void onStatus(String message) {
+                mainHandler.post(() -> callback.onStatus(message));
+            }
+
+            @Override
+            public void onSuccess() {
+                mainHandler.post(callback::onSuccess);
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                mainHandler.post(() -> callback.onError(error));
+            }
+        };
     }
 
     /**
@@ -109,15 +145,81 @@ public class Ch55xHidFlasher {
     }
 
     /**
+     * Reads an Intel HEX file from app assets.
+     */
+    public String readHexFromAssets(String fileName) throws IOException {
+        try (InputStream is = context.getAssets().open(fileName);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        }
+    }
+
+    /**
+     * 1-Step Automatic Flashing:
+     * 1. Finds the connected CH552 board (VID 0x1209, PID 0xC55D).
+     * 2. Checks and requests USB permission automatically.
+     * 3. Flashes the firmware in a background thread.
+     * 4. Delivers all callbacks safely on Android's Main (UI) thread!
+     */
+    public void flashAuto(String hexContent, FlasherCallback callback) {
+        FlasherCallback safeCallback = wrapMainThread(callback);
+        UsbDevice device = findConnectedDevice();
+        if (device == null) {
+            if (safeCallback != null) {
+                safeCallback.onError(new IOException("Idan's DevBoard (CH552) not found. Connect board via USB OTG adapter."));
+            }
+            return;
+        }
+
+        if (safeCallback != null) {
+            safeCallback.onStatus("Requesting USB device permission...");
+        }
+
+        requestPermission(device, granted -> {
+            if (!granted) {
+                if (safeCallback != null) {
+                    safeCallback.onError(new IOException("USB permission was denied by user."));
+                }
+                return;
+            }
+            flash(device, hexContent, safeCallback);
+        });
+    }
+
+    /**
+     * 1-Step Automatic Flashing from an Asset file (e.g. "firmware.hex"):
+     * Loads the file from assets/ and flashes it to the connected board automatically.
+     * All callbacks delivered on Android's Main (UI) thread.
+     */
+    public void flashAsset(String assetFileName, FlasherCallback callback) {
+        FlasherCallback safeCallback = wrapMainThread(callback);
+        try {
+            String hex = readHexFromAssets(assetFileName);
+            flashAuto(hex, safeCallback);
+        } catch (Exception e) {
+            if (safeCallback != null) {
+                safeCallback.onError(new IOException("Failed to load asset file '" + assetFileName + "': " + e.getMessage(), e));
+            }
+        }
+    }
+
+    /**
      * Asynchronously flashes an Intel HEX string to the connected CH552 device.
+     * All callbacks are safely delivered on Android's Main (UI) thread.
      */
     public void flash(UsbDevice device, String hexText, FlasherCallback callback) {
+        FlasherCallback safeCallback = wrapMainThread(callback);
         executor.execute(() -> {
             UsbDeviceConnection connection = null;
             UsbInterface usbInterface = null;
 
             try {
-                callback.onStatus("Opening USB device connection...");
+                if (safeCallback != null) safeCallback.onStatus("Opening USB device connection...");
                 connection = usbManager.openDevice(device);
                 if (connection == null) {
                     throw new IOException("Failed to open USB device connection. Ensure permissions are granted.");
@@ -145,25 +247,27 @@ public class Ch55xHidFlasher {
                 }
 
                 // 1. Handshake (CMD_HELLO)
-                callback.onStatus("Connecting to bootloader (CMD_HELLO)...");
+                if (safeCallback != null) safeCallback.onStatus("Connecting to bootloader (CMD_HELLO)...");
                 byte seq = 0;
                 byte[] helloResp = transceive(connection, epOut, epIn, CMD_HELLO, seq++, 0, new byte[0]);
                 int chipId = helloResp[4] & 0xFF;
                 int version = helloResp[5] & 0xFF;
                 int maxFlash = (helloResp[6] & 0xFF) | ((helloResp[7] & 0xFF) << 8);
 
-                callback.onStatus("Detected chip ID 0x" + Integer.toHexString(chipId) +
-                        " (v" + version + ".0, limit " + maxFlash + " bytes)");
+                if (safeCallback != null) {
+                    safeCallback.onStatus("Detected chip ID 0x" + Integer.toHexString(chipId) +
+                            " (v" + version + ".0, limit " + maxFlash + " bytes)");
+                }
 
                 // 2. Parse Intel HEX
-                callback.onStatus("Parsing Intel HEX firmware...");
+                if (safeCallback != null) safeCallback.onStatus("Parsing Intel HEX firmware...");
                 IntelHexParser.ParsedHex parsed = IntelHexParser.parse(hexText, maxFlash);
                 byte[] binData = parsed.getData();
                 int totalBytes = parsed.getEndAddress();
                 int expectedCrc = parsed.getCrc16();
 
                 // 3. Unlock Flash engine (CMD_UNLOCK)
-                callback.onStatus("Unlocking IAP Flash engine...");
+                if (safeCallback != null) safeCallback.onStatus("Unlocking IAP Flash engine...");
                 byte[] unlockToken = new byte[]{(byte) 0x5A, (byte) 0xC3, (byte) 0x3C, (byte) 0xA5};
                 byte[] unlockResp = transceive(connection, epOut, epIn, CMD_UNLOCK, seq++, 0, unlockToken);
                 if (unlockResp[59] != 0) {
@@ -171,7 +275,7 @@ public class Ch55xHidFlasher {
                 }
 
                 // 4. Flash blocks (CMD_WRITE_BLOCK)
-                callback.onStatus("Writing firmware (" + totalBytes + " bytes)...");
+                if (safeCallback != null) safeCallback.onStatus("Writing firmware (" + totalBytes + " bytes)...");
                 int offset = 0;
                 while (offset < totalBytes) {
                     int remaining = totalBytes - offset;
@@ -188,11 +292,11 @@ public class Ch55xHidFlasher {
 
                     offset += chunkSize;
                     int percent = (int) (((double) offset / totalBytes) * 100);
-                    callback.onProgress(percent, offset, totalBytes);
+                    if (safeCallback != null) safeCallback.onProgress(percent, offset, totalBytes);
                 }
 
                 // 5. Verify CRC (CMD_VERIFY_CRC)
-                callback.onStatus("Verifying written firmware integrity (CRC16)...");
+                if (safeCallback != null) safeCallback.onStatus("Verifying written firmware integrity (CRC16)...");
                 byte[] crcPayload = new byte[]{(byte) (expectedCrc & 0xFF), (byte) ((expectedCrc >> 8) & 0xFF)};
                 byte[] verifyResp = transceive(connection, epOut, epIn, CMD_VERIFY_CRC, seq++, totalBytes, crcPayload);
                 if (verifyResp[59] != 0) {
@@ -202,18 +306,20 @@ public class Ch55xHidFlasher {
                 }
 
                 // 6. Reboot device (CMD_REBOOT)
-                callback.onStatus("Rebooting device into user application...");
+                if (safeCallback != null) safeCallback.onStatus("Rebooting device into user application...");
                 try {
                     transceive(connection, epOut, epIn, CMD_REBOOT, seq++, 0, new byte[0], 300);
                 } catch (Exception ignored) {
                     // Detaches immediately on reboot
                 }
 
-                callback.onStatus("Done! Microcontroller successfully programmed.");
-                callback.onSuccess();
+                if (safeCallback != null) {
+                    safeCallback.onStatus("Done! Microcontroller successfully programmed.");
+                    safeCallback.onSuccess();
+                }
 
             } catch (Exception e) {
-                callback.onError(e);
+                if (safeCallback != null) safeCallback.onError(e);
             } finally {
                 if (usbInterface != null && connection != null) {
                     connection.releaseInterface(usbInterface);

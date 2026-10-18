@@ -82,4 +82,11 @@
         <attr name="defaultIcon" format="reference"/>
         <attr name="onHoverIcon" format="reference"/>
     </declare-styleable>
+
+    <declare-styleable name="BlocklyVertical">
+        <!-- The default text size for fields in a block. -->
+        <attr name="blockTextSize" format="dimension|reference"/>
+        <!-- Whether blocks without outputs or previous connections have hats. -->
+        <attr name="blockHat" format="boolean"/>
+    </declare-styleable>
 </resources>

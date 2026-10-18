@@ -17,7 +17,7 @@ package com.google.blockly.android;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -312,7 +312,7 @@ public abstract class AbstractBlocklyActivity extends AppCompatActivity {
         if (mNavigationDrawer != null) {
             // Read in the flag indicating whether or not the user has demonstrated awareness of the
             // drawer. See PREF_USER_LEARNED_DRAWER for details.
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences sp = getSharedPreferences(getPackageName() + "_preferences", Context.MODE_PRIVATE);
             mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
             if (!mUserLearnedDrawer) {
                 mDrawerLayout.openDrawer(mNavigationDrawer);
@@ -633,8 +633,8 @@ public abstract class AbstractBlocklyActivity extends AppCompatActivity {
                     // The user manually opened the drawer; store this flag to prevent auto-showing
                     // the navigation drawer automatically in the future.
                     mUserLearnedDrawer = true;
-                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(
-                            AbstractBlocklyActivity.this);
+                    SharedPreferences sp = getSharedPreferences(getPackageName() + "_preferences",
+                            Context.MODE_PRIVATE);
                     sp.edit().putBoolean(PREF_USER_LEARNED_DRAWER, true).apply();
                 }
 

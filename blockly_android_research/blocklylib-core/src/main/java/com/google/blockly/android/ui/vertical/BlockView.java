@@ -16,6 +16,7 @@
 package com.google.blockly.android.ui.vertical;
 
 import android.annotation.SuppressLint;
+import com.google.blockly.android.R;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;

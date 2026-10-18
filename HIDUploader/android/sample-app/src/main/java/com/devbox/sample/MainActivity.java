@@ -39,58 +39,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void flashFirmware(String hexContent, String firmwareDescription) {
-        UsbDevice device = flasher.findConnectedDevice();
-        if (device == null) {
-            Toast.makeText(this, "Idan's DevBoard not detected! Connect board via USB-C / OTG adapter.", Toast.LENGTH_LONG).show();
-            statusText.setText("Device not found. Connect Idan's DevBoard and try again.");
-            return;
-        }
-
-        flasher.requestPermission(device, granted -> {
-            if (granted) {
-                executeFlash(device, hexContent, firmwareDescription);
-            } else {
-                Toast.makeText(this, "USB permission denied by user.", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void executeFlash(UsbDevice device, String hexContent, String description) {
         setButtonsEnabled(false);
         progressBar.setProgress(0);
-        statusText.setText("Initiating flashing for: " + description);
+        statusText.setText("Initiating flashing for: " + firmwareDescription);
 
-        flasher.flash(device, hexContent, new FlasherCallback() {
+        flasher.flashAuto(hexContent, new FlasherCallback() {
             @Override
             public void onProgress(int percent, int currentBytes, int totalBytes) {
-                runOnUiThread(() -> {
-                    progressBar.setProgress(percent);
-                    statusText.setText("Flashing: " + percent + "% (" + currentBytes + "/" + totalBytes + " bytes)");
-                });
+                progressBar.setProgress(percent);
+                statusText.setText("Flashing: " + percent + "% (" + currentBytes + "/" + totalBytes + " bytes)");
             }
 
             @Override
             public void onStatus(String message) {
-                runOnUiThread(() -> statusText.setText(message));
+                statusText.setText(message);
             }
 
             @Override
             public void onSuccess() {
-                runOnUiThread(() -> {
-                    setButtonsEnabled(true);
-                    progressBar.setProgress(100);
-                    statusText.setText("Success! Board is now typing " + description);
-                    Toast.makeText(MainActivity.this, "CH552 successfully programmed!", Toast.LENGTH_LONG).show();
-                });
+                setButtonsEnabled(true);
+                progressBar.setProgress(100);
+                statusText.setText("Success! Board is now running " + firmwareDescription);
+                Toast.makeText(MainActivity.this, "CH552 successfully programmed!", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onError(Throwable error) {
-                runOnUiThread(() -> {
-                    setButtonsEnabled(true);
-                    statusText.setText("Error: " + error.getMessage());
-                    Toast.makeText(MainActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                setButtonsEnabled(true);
+                statusText.setText("Error: " + error.getMessage());
+                Toast.makeText(MainActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
     namespace 'com.google.blockly.android'
@@ -24,22 +25,9 @@ android {
         }
     }
 
-    flavorDimensions = ['blockly']
-    productFlavors {
-        full {
-            dimension 'blockly'
-        }
-        lite {
-            dimension 'blockly'
-        }
-    }
-
-    sourceSets {
-        lite {
-            assets.srcDirs = ['src/lite/assets']
-        }
-        full {
-            assets.srcDirs = ['src/lite/assets', 'src/full/assets']
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
         }
     }
 
@@ -59,4 +47,17 @@ dependencies {
     api 'androidx.drawerlayout:drawerlayout:1.2.0'
     
     testImplementation 'junit:junit:4.13.2'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.google.blockly.android'
+                artifactId = 'blockly'
+                version = '1.0.0'
+            }
+        }
+    }
 }

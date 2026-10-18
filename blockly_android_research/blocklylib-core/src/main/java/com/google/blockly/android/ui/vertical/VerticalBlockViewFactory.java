@@ -16,6 +16,7 @@
 package com.google.blockly.android.ui.vertical;
 
 import android.content.Context;
+import com.google.blockly.android.R;
 import android.content.res.TypedArray;
 import androidx.appcompat.widget.AppCompatSpinner;
 import android.util.SparseIntArray;

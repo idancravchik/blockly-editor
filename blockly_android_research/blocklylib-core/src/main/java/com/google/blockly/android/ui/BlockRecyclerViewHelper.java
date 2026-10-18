@@ -17,6 +17,7 @@ package com.google.blockly.android.ui;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -51,7 +52,7 @@ import java.util.List;
 public class BlockRecyclerViewHelper {
     private static final String TAG = "BlockRVHelper";
 
-    private final Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final WorkspacePoint mTempWorkspacePoint = new WorkspacePoint();
 
     private final RecyclerView mRecyclerView;

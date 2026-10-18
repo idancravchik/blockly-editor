@@ -19,6 +19,7 @@ import android.content.ClipData;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
@@ -234,7 +235,7 @@ public class Dragger {
         mClipHelper = blocklyController.getClipDataHelper();
         mConnectionManager = mWorkspace.getConnectionManager();
 
-        mMainHandler = new Handler();
+        mMainHandler = new Handler(Looper.getMainLooper());
     }
 
     /**

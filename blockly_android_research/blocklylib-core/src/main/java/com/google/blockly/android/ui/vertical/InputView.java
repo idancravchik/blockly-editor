@@ -16,6 +16,7 @@
 package com.google.blockly.android.ui.vertical;
 
 import android.content.Context;
+import com.google.blockly.android.R;
 import android.view.View;
 
 import com.google.blockly.android.ui.BlockGroup;

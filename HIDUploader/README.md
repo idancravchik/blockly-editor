@@ -67,6 +67,7 @@ HIDUploader/
 ├── python/                            # Cross-Platform CLI Tool
 │   └── ch55x_hid_cli.py               # Terminal flasher via hidapi
 │
+├── USAGE.md                           # Quick-start integration guide for Android developers
 └── README.md                          # Complete developer documentation
 ```
 

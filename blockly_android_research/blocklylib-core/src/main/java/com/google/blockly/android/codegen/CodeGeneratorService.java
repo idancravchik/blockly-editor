@@ -21,6 +21,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import android.text.TextUtils;
@@ -68,7 +69,7 @@ public class CodeGeneratorService extends Service {
 
     @Override
     public void onCreate() {
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
         mWebview = new WebView(this);
         mWebview.getSettings().setJavaScriptEnabled(true);
         mWebview.setWebChromeClient(new WebChromeClient());
