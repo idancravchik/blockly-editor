@@ -1,0 +1,26 @@
+[
+  {
+    "id": "hardware",
+    "name": "Hardware",
+    "color": "#4CAF50",
+    "blocks": ["led_toggle"]
+  },
+  {
+    "id": "timing",
+    "name": "Timing",
+    "color": "#FF9800",
+    "blocks": ["delay_wait"]
+  },
+  {
+    "id": "control",
+    "name": "Control",
+    "color": "#2196F3",
+    "blocks": ["repeat_loop"]
+  },
+  {
+    "id": "output",
+    "name": "Serial",
+    "color": "#9C27B0",
+    "blocks": ["print_message"]
+  }
+]

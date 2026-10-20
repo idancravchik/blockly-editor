@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "blockly_modern"
+include ':blockly'
+include ':app'
+include ':blockly-android'
+project(':blockly-android').projectDir = new File(rootDir.parentFile, 'blockly-android')

@@ -1,165 +1,112 @@
-# 05 — Designing Custom Blocks
+# מדריך 05: עיצוב והגדרת בלוקים (blocks.json)
 
-This guide explains how to define, design, and register custom blocks in Native Blockly for Android using JSON specifications.
+הגדרת הבלוקים היא לב המערכת. במקום לכתוב קוד ג'אווה ארוך עבור כל בלוק, כל הבלוקים מוגדרים בקובץ `blocks.json` בתיקיית `app/src/main/assets/`.
 
 ---
 
-## 1. Block Definition Format (JSON)
-
-In Native Blockly, blocks are defined using JSON files placed in your Android `assets/` folder (e.g., `app/src/main/assets/default/custom_blocks.json`).
-
-### Block Anatomy
+## 📄 דוגמה לקובץ `blocks.json`
 
 ```json
 [
   {
-    "type": "set_led_state",
-    "message0": "set LED pin %1 to %2",
-    "args0": [
+    "type": "gpio_set",
+    "message": "הגדר פין דיגיטלי",
+    "color": "#4CAF50",
+    "fields": [
       {
-        "type": "field_dropdown",
         "name": "PIN",
-        "options": [
-          ["Pin 13 (Built-in)", "13"],
-          ["Pin 12", "12"],
-          ["Pin 11", "11"],
-          ["Pin 10", "10"]
-        ]
+        "type": "dropdown",
+        "default": "13",
+        "options": ["13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2"]
       },
       {
-        "type": "field_dropdown",
         "name": "STATE",
-        "options": [
-          ["HIGH (ON)", "HIGH"],
-          ["LOW (OFF)", "LOW"]
-        ]
+        "type": "dropdown",
+        "default": "HIGH",
+        "options": ["HIGH", "LOW"]
       }
     ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 20,
-    "tooltip": "Turn an LED on or off on a specific GPIO pin."
+    "previousStatement": true,
+    "nextStatement": true,
+    "code": "pinMode(%PIN%, OUTPUT);\ndigitalWrite(%PIN%, %STATE%);\n"
+  },
+  {
+    "type": "delay_ms",
+    "message": "המתן מילישניות",
+    "color": "#FF9800",
+    "fields": [
+      {
+        "name": "MS",
+        "type": "number",
+        "default": "500"
+      }
+    ],
+    "previousStatement": true,
+    "nextStatement": true,
+    "code": "delay(%MS%);\n"
+  },
+  {
+    "type": "loop_forever",
+    "message": "חזור לתמיד",
+    "color": "#2196F3",
+    "statements": [
+      {
+        "name": "DO"
+      }
+    ],
+    "previousStatement": true,
+    "nextStatement": true,
+    "code": "while (true) {\n%DO%}\n"
   }
 ]
 ```
 
-### Key Definition Attributes
-1. **`type`**: The unique identifier for this block type (used in `toolbox.xml` and in your Java code generator).
-2. **`message0`**: The display string shown on the block. Placeholders (`%1`, `%2`, etc.) correspond by index to elements in `args0`.
-3. **`args0`**: An array of fields and input connectors mapped to `%1`, `%2`, etc.
-4. **`previousStatement` / `nextStatement`**: Declares that this block is a statement that can be stacked above and below other blocks. Set to `null` to accept any statement, or provide a string/array to restrict connection types.
-5. **`output`**: Marks this block as a value expression returning data (e.g. `"Number"`, `"Boolean"`, `"String"`, or `null`). A block cannot have both `previousStatement` and `output`.
-6. **`colour`**: Hue angle (`0` to `360`) or hex string (`"#FF5722"`).
-
 ---
 
-## 2. Field Types in Native Android
+## 🔍 פירוט מאפייני הבלוק
 
-Fields are the interactive UI widgets rendered inside a block:
-
-| Field Type | JSON Definition | Android UI Element | Example Use Case |
+| מאפיין | סוג | ברירת מחדל | תיאור |
 | :--- | :--- | :--- | :--- |
-| **`field_label`** | `{"type": "field_label", "text": "repeat"}` | Native `TextView` | Descriptive text labels |
-| **`field_input`** | `{"type": "field_input", "name": "VAR_NAME", "text": "item"}` | Native `EditText` dialog | Variable names, identifiers |
-| **`field_number`**| `{"type": "field_number", "name": "PORT", "value": 80, "min": 1, "max": 65535}` | Numeric keyboard editor | Numeric constants, pin numbers |
-| **`field_dropdown`**| `{"type": "field_dropdown", "name": "MODE", "options": [["Read","R"],["Write","W"]]}` | Android `Spinner` / popup | Selectable options |
-| **`field_checkbox`**| `{"type": "field_checkbox", "name": "ENABLE", "checked": true}` | Native `CheckBox` | Boolean toggles |
-| **`field_colour`**  | `{"type": "field_colour", "name": "RGB", "colour": "#ff0000"}` | Color grid dialog | LED / RGB colors |
-| **`field_variable`**| `{"type": "field_variable", "name": "VAR", "variable": "item"}` | Variable selection spinner | Variables list |
+| `type` | מחרוזת | **חובה** | מזהה ייחודי של סוג הבלוק (באנגלית) |
+| `message` | מחרוזת | `type` | הטקסט הראשי שמוצג על הבלוק (למשל: "הגדר פין") |
+| `color` | מחרוזת HEX | `#4CAF50` | צבע רקע הבלוק |
+| `fields` | מערך אובייקטים | `[]` | רשימת שדות קלט לעריכה על ידי המשתמש |
+| `previousStatement` | בוליאני | `true` | האם יש שקע עליון לחיבור לבלוק שלפניו |
+| `nextStatement` | בוליאני | `true` | האם יש בליטה תחתונה לחיבור לבלוק שאחריו |
+| `statements` | מערך אובייקטים | `[]` | הגדרת בלוק מכולה/לולאה המכיל בלוקים פנימיים |
+| `code` | מחרוזת | `""` | תבנית הקוד שהבלוק מפיק (תומך ב-Placeholders) |
 
 ---
 
-## 3. Input Sockets: Values vs. Statements
+## 🎛️ סוגי שדות (Fields) הנתמכים
 
-Inputs allow other blocks to connect into this block:
-
-### A. Value Input (`input_value`)
-Used for mathematical expressions, conditions, and calculations:
-
+### 1. שדה בחירה מתוך רשימה (`dropdown`)
+מציג דיאלוג בחירה מעוצב עם אפשרויות מוגדרות מראש:
 ```json
 {
-  "type": "read_analog_sensor",
-  "message0": "read analog sensor on pin %1",
-  "args0": [
-    {
-      "type": "input_value",
-      "name": "PIN",
-      "check": "Number"
-    }
-  ],
-  "output": "Number",
-  "colour": 180
+  "name": "STATE",
+  "type": "dropdown",
+  "default": "HIGH",
+  "options": ["HIGH", "LOW"]
 }
 ```
 
-### B. Statement Input (`input_statement`)
-Used for loops, if-conditions, and code bodies that contain sequences of statements:
-
+### 2. שדה מספר (`number`)
+פותח מקלדת מספרית לעריכת ערך:
 ```json
 {
-  "type": "timer_every_ms",
-  "message0": "every %1 ms do %2",
-  "args0": [
-    {
-      "type": "input_value",
-      "name": "INTERVAL",
-      "check": "Number"
-    },
-    {
-      "type": "input_statement",
-      "name": "DO"
-    }
-  ],
-  "previousStatement": null,
-  "nextStatement": null,
-  "colour": 60
+  "name": "MS",
+  "type": "number",
+  "default": "1000"
 }
 ```
 
----
-
-## 4. Registering Block Definitions in Java
-
-To make your custom blocks available in your application, add the asset path to `getBlockDefinitionsJsonPaths()`:
-
-```java
-public class MainActivity extends AbstractBlocklyActivity {
-
-    @NonNull
-    @Override
-    protected List<String> getBlockDefinitionsJsonPaths() {
-        return Arrays.asList(
-            "default/default_blocks.json",  // Standard Math, Logic, Loops
-            "default/custom_blocks.json"   // Your custom hardware/domain blocks
-        );
-    }
-
-    @NonNull
-    @Override
-    protected String getToolboxContentsXmlPath() {
-        return "default/toolbox.xml";
-    }
-
-    // ...
+### 3. שדה טקסט חופשי (`text`)
+מאפשר הקלדת כל מחרוזת טקסט חופשית:
+```json
+{
+  "name": "MSG",
+  "type": "text",
+  "default": "Hello World"
 }
 ```
-
-Then reference the new block type in `toolbox.xml`:
-
-```xml
-<category name="Hardware" colour="20">
-    <block type="set_led_state" />
-    <block type="timer_every_ms">
-        <value name="INTERVAL">
-            <shadow type="math_number">
-                <field name="NUM">1000</field>
-            </shadow>
-        </value>
-    </block>
-</category>
-```
-
----
-
-## Next Steps
-Proceed to [**06 — Writing Block Logic & Pure-Java Code Generators**](file:///c:/Users/jnux9/OneDrive/שולחן%20העבודה/DevboxV1/blockly_guides/06-writing-block-logic-and-c-generators.md) to implement the execution logic that converts these blocks into runnable code.

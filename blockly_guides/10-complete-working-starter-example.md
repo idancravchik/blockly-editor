@@ -1,432 +1,213 @@
-# 10 — Complete Working Starter Example
+# מדריך 10: דוגמה מלאה מוכנה להרצה
 
-This guide provides a complete, copy-pasteable minimal working **Java Android Studio** application using the modernized **Native Blockly for Android** library and the pure-Java **`JavaCodeGenerator`**.
-
----
-
-## 1. Project Directory Structure
-
-```
-MyBlocklyApp/
-├── settings.gradle
-├── build.gradle (Project-level)
-└── app/
-    ├── build.gradle (Module-level)
-    └── src/
-        └── main/
-            ├── AndroidManifest.xml
-            ├── assets/
-            │   └── default/
-            │       ├── default_blocks.json
-            │       ├── custom_blocks.json
-            │       └── toolbox.xml
-            ├── java/
-            │   └── com/
-            │       └── example/
-            │           └── myblocklyapp/
-            │               ├── MainActivity.java
-            │               └── ArduinoCodeBuilder.java
-            └── res/
-                └── values/
-                    ├── strings.xml
-                    └── styles.xml
-```
+מדריך זה מרכז פרויקט דמו שלם שניתן להעתיק ולהריץ מיד.
 
 ---
 
-## 2. Configuration Files
+## 📁 1. קובץ הבלוקים: `app/src/main/assets/blocks.json`
 
-### `settings.gradle`
-```groovy
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-rootProject.name = "MyBlocklyApp"
-include ':app'
-
-// Reference the modernized Native Blockly modules
-include ':blocklylib-core'
-project(':blocklylib-core').projectDir = new File(settingsDir, '../blockly_android_research/blocklylib-core')
-
-include ':blocklylib-vertical'
-project(':blocklylib-vertical').projectDir = new File(settingsDir, '../blockly_android_research/blocklylib-vertical')
-```
-
-### Project-level `build.gradle`
-```groovy
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:9.3.2'
-    }
-}
-
-allprojects {
-    configurations.all {
-        resolutionStrategy {
-            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-        }
-    }
-}
-```
-
-### Module-level `app/build.gradle`
-```groovy
-apply plugin: 'com.android.application'
-
-android {
-    namespace 'com.example.myblocklyapp'
-    compileSdk 34
-
-    defaultConfig {
-        applicationId "com.example.myblocklyapp"
-        minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    buildFeatures {
-        buildConfig = true
-    }
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    implementation 'androidx.annotation:annotation:1.7.0'
-    implementation 'androidx.fragment:fragment:1.6.2'
-    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-    implementation 'com.google.android.material:material:1.11.0'
-
-    implementation project(':blocklylib-core')
-    implementation project(':blocklylib-vertical')
-}
-```
-
-### `app/src/main/AndroidManifest.xml`
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <application
-        android:allowBackup="true"
-        android:label="Blockly Arduino Demo"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:configChanges="orientation|screenSize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-    </application>
-
-</manifest>
-```
-
----
-
-## 3. Assets: Toolbox & Custom Blocks
-
-### `app/src/main/assets/default/custom_blocks.json`
 ```json
 [
   {
-    "type": "set_led_state",
-    "message0": "set LED pin %1 to %2",
-    "args0": [
+    "type": "gpio_set",
+    "message": "הגדר פין דיגיטלי",
+    "color": "#4CAF50",
+    "fields": [
       {
-        "type": "field_dropdown",
         "name": "PIN",
-        "options": [
-          ["13 (Built-in)", "13"],
-          ["12", "12"],
-          ["11", "11"],
-          ["10", "10"]
-        ]
+        "type": "dropdown",
+        "default": "13",
+        "options": ["13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2"]
       },
       {
-        "type": "field_dropdown",
         "name": "STATE",
-        "options": [
-          ["HIGH (ON)", "HIGH"],
-          ["LOW (OFF)", "LOW"]
-        ]
+        "type": "dropdown",
+        "default": "HIGH",
+        "options": ["HIGH", "LOW"]
       }
     ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 20,
-    "tooltip": "Turn an LED on or off."
+    "previousStatement": true,
+    "nextStatement": true,
+    "code": "pinMode(%PIN%, OUTPUT);\ndigitalWrite(%PIN%, %STATE%);\n"
   },
   {
-    "type": "delay_milliseconds",
-    "message0": "wait %1 ms",
-    "args0": [
+    "type": "delay_ms",
+    "message": "המתן מילישניות",
+    "color": "#FF9800",
+    "fields": [
       {
-        "type": "input_value",
-        "name": "DELAY_MS",
-        "check": "Number"
+        "name": "MS",
+        "type": "number",
+        "default": "500"
       }
     ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 120,
-    "tooltip": "Pause execution for milliseconds."
+    "previousStatement": true,
+    "nextStatement": true,
+    "code": "delay(%MS%);\n"
+  },
+  {
+    "type": "loop_forever",
+    "message": "חזור לתמיד",
+    "color": "#2196F3",
+    "statements": [
+      {
+        "name": "DO"
+      }
+    ],
+    "previousStatement": true,
+    "nextStatement": true,
+    "code": "while (true) {\n%DO%}\n"
   }
 ]
 ```
 
-### `app/src/main/assets/default/toolbox.xml`
-```xml
-<toolbox>
-    <category name="Hardware" colour="20">
-        <block type="set_led_state" />
-        <block type="delay_milliseconds">
-            <value name="DELAY_MS">
-                <shadow type="math_number">
-                    <field name="NUM">1000</field>
-                </shadow>
-            </value>
-        </block>
-    </category>
+---
 
-    <category name="Loops" colour="120">
-        <block type="controls_repeat_ext">
-            <value name="TIMES">
-                <shadow type="math_number">
-                    <field name="NUM">5</field>
-                </shadow>
-            </value>
-        </block>
-    </category>
+## 📁 2. קובץ הקטגוריות: `app/src/main/assets/categories.json`
 
-    <category name="Logic" colour="210">
-        <block type="controls_if" />
-        <block type="logic_boolean" />
-    </category>
-
-    <category name="Math" colour="230">
-        <block type="math_number" />
-        <block type="math_arithmetic" />
-    </category>
-
-    <category name="Variables" custom="VARIABLE" colour="330" />
-</toolbox>
+```json
+[
+  {
+    "id": "gpio",
+    "name": "פינים",
+    "color": "#4CAF50",
+    "blocks": ["gpio_set"]
+  },
+  {
+    "id": "timing",
+    "name": "תזמון",
+    "color": "#FF9800",
+    "blocks": ["delay_ms"]
+  },
+  {
+    "id": "control",
+    "name": "בקרה",
+    "color": "#2196F3",
+    "blocks": ["loop_forever"]
+  }
+]
 ```
 
 ---
 
-## 4. Java Application Code
+## 📁 3. קובץ העיצוב: `app/src/main/res/layout/activity_main.xml`
 
-### `ArduinoCodeBuilder.java`
-```java
-package com.example.myblocklyapp;
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-import com.google.blockly.android.codegen.JavaCodeGenerator;
-import com.google.blockly.model.Workspace;
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#1976D2"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp">
 
-public class ArduinoCodeBuilder {
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Blockly Android Starter"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    public static String buildSketch(Workspace workspace) {
-        JavaCodeGenerator generator = new JavaCodeGenerator();
-        registerVisitors(generator);
+        <Button
+            android:id="@+id/btnViewCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FF9800"
+            android:text="צפה בקוד"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
 
-        String userCode = generator.workspaceToCode(workspace);
+    <com.blockly.android.BlocklyView
+        android:id="@+id/blocklyView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("// Auto-generated Arduino Sketch\n");
-        sb.append("#include <Arduino.h>\n\n");
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="#263238"
+        android:padding="8dp"
+        android:orientation="vertical">
 
-        sb.append("void setup() {\n");
-        sb.append("  pinMode(13, OUTPUT);\n");
-        sb.append("  Serial.begin(9600);\n");
-        sb.append("}\n\n");
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="קוד חי (Live):"
+            android:textColor="#80CBC4"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-        sb.append("void loop() {\n");
-        if (userCode.trim().isEmpty()) {
-            sb.append("  // Empty workspace\n");
-        } else {
-            sb.append(generator.prefixLines(userCode, "  "));
-        }
-        sb.append("}\n");
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="4dp">
 
-        return sb.toString();
-    }
+            <TextView
+                android:id="@+id/tvLiveCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="// גרור בלוקים ללוח לצפייה בקוד..."
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:fontFamily="monospace" />
+        </ScrollView>
+    </LinearLayout>
 
-    private static void registerVisitors(JavaCodeGenerator generator) {
-        // LED Block
-        generator.registerBlockVisitor("set_led_state", (block, gen) -> {
-            String pin = gen.getFieldValue(block, "PIN");
-            String state = gen.getFieldValue(block, "STATE");
-            return "digitalWrite(" + pin + ", " + state + ");\n";
-        });
-
-        // Delay Block
-        generator.registerBlockVisitor("delay_milliseconds", (block, gen) -> {
-            String ms = gen.valueToCode(block, "DELAY_MS");
-            if (ms.isEmpty()) ms = "1000";
-            return "delay(" + ms + ");\n";
-        });
-
-        // Repeat Loop
-        generator.registerBlockVisitor("controls_repeat_ext", (block, gen) -> {
-            String times = gen.valueToCode(block, "TIMES");
-            if (times.isEmpty()) times = "10";
-            String body = gen.statementToCode(block, "DO");
-            return "for (int i = 0; i < " + times + "; i++) {\n" + body + "}\n";
-        });
-
-        // Math Number
-        generator.registerBlockVisitor("math_number", (block, gen) -> {
-            String num = gen.getFieldValue(block, "NUM");
-            return num != null ? num : "0";
-        });
-
-        // If Condition
-        generator.registerBlockVisitor("controls_if", (block, gen) -> {
-            String condition = gen.valueToCode(block, "IF0");
-            if (condition.isEmpty()) condition = "false";
-            String thenBranch = gen.statementToCode(block, "DO0");
-            return "if (" + condition + ") {\n" + thenBranch + "}\n";
-        });
-
-        // Variables
-        generator.registerBlockVisitor("variables_set", (block, gen) -> {
-            String var = gen.getFieldValue(block, "VAR");
-            String val = gen.valueToCode(block, "VALUE");
-            return var + " = " + (val.isEmpty() ? "0" : val) + ";\n";
-        });
-
-        generator.registerBlockVisitor("variables_get", (block, gen) -> {
-            String var = gen.getFieldValue(block, "VAR");
-            return var != null ? var : "item";
-        });
-    }
-}
+</LinearLayout>
 ```
 
-### `MainActivity.java`
+---
+
+## 📁 4. קוד ה-Activity: `app/src/main/java/com/example/myapp/MainActivity.java`
+
 ```java
-package com.example.myblocklyapp;
+package com.example.myapp;
 
 import android.os.Bundle;
-import android.widget.Toast;
-import androidx.annotation.NonNull;
+import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import com.blockly.android.BlocklyView;
 
-import com.google.blockly.android.AbstractBlocklyActivity;
-import com.google.blockly.android.ui.BlockViewFactory;
-import com.google.blockly.android.ui.vertical.VerticalBlockViewFactory;
-import com.google.blockly.model.Workspace;
-import com.google.blockly.utils.BlocklyXmlHelper;
+public class MainActivity extends AppCompatActivity {
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.Arrays;
-import java.util.List;
-
-public class MainActivity extends AbstractBlocklyActivity {
-
-    private static final String SAVE_FILENAME = "saved_workspace.xml";
-
-    @NonNull
-    @Override
-    protected List<String> getBlockDefinitionsJsonPaths() {
-        return Arrays.asList(
-                "default/default_blocks.json",
-                "default/custom_blocks.json"
-        );
-    }
-
-    @NonNull
-    @Override
-    protected String getToolboxContentsXmlPath() {
-        return "default/toolbox.xml";
-    }
-
-    @NonNull
-    @Override
-    protected BlockViewFactory onCreateViewFactory() {
-        return new VerticalBlockViewFactory(this, getWorkspaceHelper());
-    }
+    private BlocklyView blocklyView;
+    private TextView tvLiveCode;
 
     @Override
-    protected void onRunCode() {
-        Workspace workspace = getWorkspace();
-        if (workspace == null || workspace.getRootBlocks().isEmpty()) {
-            Toast.makeText(this, "Add blocks to the workspace first!", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        // Generate complete Arduino C sketch in pure Java
-        String generatedSketch = ArduinoCodeBuilder.buildSketch(workspace);
+        blocklyView = findViewById(R.id.blocklyView);
+        tvLiveCode = findViewById(R.id.tvLiveCode);
 
-        // Display in a scrollable dialog
-        new AlertDialog.Builder(this)
-                .setTitle("Generated Arduino C Code")
-                .setMessage(generatedSketch)
-                .setPositiveButton("OK", null)
-                .show();
-    }
+        // אתחול בשורה אחת
+        blocklyView.initFromAssets("blocks.json", "categories.json");
 
-    @Override
-    protected void onSaveWorkspace() {
-        try (FileOutputStream fos = openFileOutput(SAVE_FILENAME, MODE_PRIVATE)) {
-            BlocklyXmlHelper.writeToXml(getWorkspace(), fos);
-            Toast.makeText(this, "Workspace saved!", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Save error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
+        // עדכון תצוגה מקדימה חיה
+        blocklyView.setOnWorkspaceChangedListener(() -> {
+            String code = blocklyView.generateCode();
+            tvLiveCode.setText(code.isEmpty() ? "// גרור בלוקים ללוח לצפייה בקוד..." : code);
+        });
 
-    @Override
-    protected void onLoadWorkspace() {
-        try (FileInputStream fis = openFileInput(SAVE_FILENAME)) {
-            getController().loadWorkspaceContents(fis);
-            Toast.makeText(this, "Workspace loaded!", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Load error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        // כפתור הצגת דיאלוג קוד
+        findViewById(R.id.btnViewCode).setOnClickListener(v -> {
+            String code = blocklyView.generateCode();
+            new AlertDialog.Builder(this)
+                    .setTitle("Generated C/Arduino Code")
+                    .setMessage(code.isEmpty() ? "// לוח הבלוקים ריק!" : code)
+                    .setPositiveButton("סגור", null)
+                    .show();
+        });
     }
 }
 ```
-
----
-
-## 5. Running the Application
-
-1. Open the project in **Android Studio**.
-2. Sync Gradle (**File > Sync Project with Gradle Files**).
-3. Select an Android device or emulator running **API 21 to 34+**.
-4. Press **Run** (Shift+F10).
-5. Open the side drawer, drag `set LED pin 13 to HIGH`, `wait 1000 ms`, and `set LED pin 13 to LOW` into the canvas, snapping them together.
-6. Click the **Run** (Play) icon in the action bar. The dialog will instantly pop up displaying the complete, valid Arduino C sketch!
