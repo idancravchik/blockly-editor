@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
 
     <!-- Workspace Canvas (Main Background) -->
     <com.blockly.android.view.WorkspaceCanvasView
@@ -63,43 +64,57 @@
         android:orientation="vertical"
         android:elevation="6dp">
 
-        <Button
+        <TextView
             android:id="@+id/btnZoomIn"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:gravity="center"
             android:text="+"
-            android:textSize="18sp"
-            android:background="#80FFFFFF"
-            android:textColor="#333333" />
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:background="#E8FFFFFF"
+            android:textColor="#333333"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <Button
+        <TextView
             android:id="@+id/btnZoomOut"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="6dp"
+            android:gravity="center"
             android:text="-"
-            android:textSize="18sp"
-            android:background="#80FFFFFF"
-            android:textColor="#333333" />
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:background="#E8FFFFFF"
+            android:textColor="#333333"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <Button
+        <TextView
             android:id="@+id/btnResetView"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="6dp"
+            android:gravity="center"
             android:text="⌖"
-            android:textSize="18sp"
-            android:background="#80FFFFFF"
-            android:textColor="#333333" />
+            android:textSize="20sp"
+            android:background="#E8FFFFFF"
+            android:textColor="#333333"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <Button
+        <TextView
             android:id="@+id/btnClear"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="6dp"
+            android:gravity="center"
             android:text="🗑"
             android:textSize="18sp"
-            android:background="#80FFFFFF" />
+            android:background="#E8FFFFFF"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
 </FrameLayout>

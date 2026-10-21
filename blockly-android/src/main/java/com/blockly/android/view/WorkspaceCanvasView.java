@@ -1,5 +1,6 @@
 package com.blockly.android.view;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.EditText;
-import android.app.AlertDialog;
 import com.blockly.android.model.BlockDef;
 import com.blockly.android.model.BlockInstance;
 import com.blockly.android.model.FieldDef;
@@ -54,9 +54,19 @@ public class WorkspaceCanvasView extends View {
         init(context);
     }
 
+    public WorkspaceCanvasView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    public WorkspaceCanvasView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init(context);
+    }
+
     private void init(Context context) {
-        gridPaint.setColor(Color.parseColor("#E0E0E0"));
-        gridPaint.setStrokeWidth(2f);
+        gridPaint.setColor(Color.parseColor("#C8D1D9"));
+        gridPaint.setStrokeWidth(3f);
 
         scaleDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
@@ -121,6 +131,10 @@ public class WorkspaceCanvasView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        // Always paint light background regardless of system theme
+        canvas.drawColor(Color.parseColor("#F5F5F5"));
+
         drawGrid(canvas);
 
         canvas.save();
@@ -152,9 +166,12 @@ public class WorkspaceCanvasView extends View {
     }
 
     private void drawGrid(Canvas canvas) {
-        float step = 30f * scale;
+        float step = Math.max(12f, 30f * scale);
         float startX = panX % step;
+        if (startX < 0) startX += step;
         float startY = panY % step;
+        if (startY < 0) startY += step;
+
         for (float x = startX; x < getWidth(); x += step) {
             for (float y = startY; y < getHeight(); y += step) {
                 canvas.drawPoint(x, y, gridPaint);

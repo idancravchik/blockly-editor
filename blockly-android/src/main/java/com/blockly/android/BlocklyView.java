@@ -3,6 +3,7 @@ package com.blockly.android;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -17,6 +18,7 @@ import com.blockly.android.model.Workspace;
 import com.blockly.android.model.WorkspaceSerializer;
 import com.blockly.android.view.WorkspaceCanvasView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -25,6 +27,49 @@ import java.util.List;
 import java.util.Map;
 
 public class BlocklyView extends FrameLayout {
+
+    private static final String TAG = "BlocklyAndroid";
+
+    private static final String DEFAULT_FALLBACK_BLOCKS = "[\n" +
+            "  {\n" +
+            "    \"type\": \"gpio_set\",\n" +
+            "    \"message\": \"Set Digital Pin\",\n" +
+            "    \"color\": \"#4CAF50\",\n" +
+            "    \"fields\": [\n" +
+            "      {\"name\": \"PIN\", \"type\": \"dropdown\", \"default\": \"13\", \"options\": [\"13\", \"12\", \"11\", \"2\"]},\n" +
+            "      {\"name\": \"STATE\", \"type\": \"dropdown\", \"default\": \"HIGH\", \"options\": [\"HIGH\", \"LOW\"]}\n" +
+            "    ],\n" +
+            "    \"previousStatement\": true,\n" +
+            "    \"nextStatement\": true,\n" +
+            "    \"code\": \"pinMode(%PIN%, OUTPUT);\\ndigitalWrite(%PIN%, %STATE%);\\n\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"type\": \"delay_ms\",\n" +
+            "    \"message\": \"Delay Milliseconds\",\n" +
+            "    \"color\": \"#FF9800\",\n" +
+            "    \"fields\": [\n" +
+            "      {\"name\": \"MS\", \"type\": \"number\", \"default\": \"500\"}\n" +
+            "    ],\n" +
+            "    \"previousStatement\": true,\n" +
+            "    \"nextStatement\": true,\n" +
+            "    \"code\": \"delay(%MS%);\\n\"\n" +
+            "  },\n" +
+            "  {\n" +
+            "    \"type\": \"loop_forever\",\n" +
+            "    \"message\": \"Repeat Forever\",\n" +
+            "    \"color\": \"#2196F3\",\n" +
+            "    \"statements\": [{\"name\": \"DO\"}],\n" +
+            "    \"previousStatement\": true,\n" +
+            "    \"nextStatement\": true,\n" +
+            "    \"code\": \"while (true) {\\n%DO%}\\n\"\n" +
+            "  }\n" +
+            "]";
+
+    private static final String DEFAULT_FALLBACK_CATEGORIES = "[\n" +
+            "  {\"id\": \"gpio\", \"name\": \"GPIO\", \"color\": \"#4CAF50\", \"blocks\": [\"gpio_set\"]},\n" +
+            "  {\"id\": \"timing\", \"name\": \"Timing\", \"color\": \"#FF9800\", \"blocks\": [\"delay_ms\"]},\n" +
+            "  {\"id\": \"control\", \"name\": \"Control\", \"color\": \"#2196F3\", \"blocks\": [\"loop_forever\"]}\n" +
+            "]";
 
     public interface OnWorkspaceChangedListener {
         void onWorkspaceChanged();
@@ -51,7 +96,19 @@ public class BlocklyView extends FrameLayout {
         init(context);
     }
 
+    public BlocklyView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    public BlocklyView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init(context);
+    }
+
     private void init(Context context) {
+        setBackgroundColor(Color.parseColor("#F5F5F5"));
+
         LayoutInflater.from(context).inflate(R.layout.view_blockly, this, true);
 
         canvasView = findViewById(R.id.workspaceCanvas);
@@ -75,6 +132,9 @@ public class BlocklyView extends FrameLayout {
         findViewById(R.id.btnZoomOut).setOnClickListener(v -> canvasView.zoomOut());
         findViewById(R.id.btnResetView).setOnClickListener(v -> canvasView.resetView());
         findViewById(R.id.btnClear).setOnClickListener(v -> clearWorkspace());
+
+        // Initialize with default fallback blocks right away so canvas is never empty
+        initFromStrings(DEFAULT_FALLBACK_BLOCKS, DEFAULT_FALLBACK_CATEGORIES);
     }
 
     public void initFromAssets(String blocksAsset, String categoriesAsset) {
@@ -82,8 +142,11 @@ public class BlocklyView extends FrameLayout {
             String blocksJson = loadAssetString(blocksAsset);
             String catsJson = loadAssetString(categoriesAsset);
             initFromStrings(blocksJson, catsJson);
+            Log.d(TAG, "Successfully loaded blocks and categories from assets.");
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.w(TAG, "Could not load assets (" + blocksAsset + ", " + categoriesAsset + "): "
+                    + e.getMessage() + ". Using built-in default blocks instead.");
+            initFromStrings(DEFAULT_FALLBACK_BLOCKS, DEFAULT_FALLBACK_CATEGORIES);
         }
     }
 
@@ -101,11 +164,12 @@ public class BlocklyView extends FrameLayout {
             categories.addAll(BlockSpecParser.parseCategories(categoriesJson));
             buildToolboxUI();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to parse blocks/categories JSON: " + e.getMessage(), e);
         }
     }
 
     private void buildToolboxUI() {
+        if (categoryChipsLayout == null) return;
         categoryChipsLayout.removeAllViews();
         for (CategoryDef cat : categories) {
             Button chip = new Button(getContext());
@@ -129,8 +193,11 @@ public class BlocklyView extends FrameLayout {
     }
 
     private void showCategoryBlocks(CategoryDef cat) {
-        activeCategoryTitle.setText(cat.getName() + " Blocks");
-        activeCategoryTitle.setTextColor(cat.getColor());
+        if (activeCategoryTitle != null) {
+            activeCategoryTitle.setText(cat.getName() + " Blocks");
+            activeCategoryTitle.setTextColor(cat.getColor());
+        }
+        if (toolboxPalette == null) return;
         toolboxPalette.removeAllViews();
 
         for (String blockType : cat.getBlockTypes()) {
@@ -189,10 +256,14 @@ public class BlocklyView extends FrameLayout {
     }
 
     private String loadAssetString(String filename) throws Exception {
-        InputStream is = getContext().getAssets().open(filename);
-        byte[] bytes = new byte[is.available()];
-        is.read(bytes);
-        is.close();
-        return new String(bytes, StandardCharsets.UTF_8);
+        try (InputStream is = getContext().getAssets().open(filename);
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = is.read(buffer)) != -1) {
+                baos.write(buffer, 0, len);
+            }
+            return baos.toString(StandardCharsets.UTF_8.name());
+        }
     }
 }
