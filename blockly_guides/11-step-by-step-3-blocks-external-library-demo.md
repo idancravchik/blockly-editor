@@ -115,11 +115,32 @@
 ---
 
 ## צעד 6: אתחל ב-Activity
-ב-`MainActivity.java`:
+בקובץ `MainActivity.java` (חשוב מאוד: `findViewById` חייב להיקרא **אחרי** `setContentView`!):
 
 ```java
-BlocklyView blocklyView = findViewById(R.id.blocklyView);
-blocklyView.initFromAssets("blocks.json", "categories.json");
+package com.example.blocksdemo;
+
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import com.blockly.android.BlocklyView;
+
+public class MainActivity extends AppCompatActivity {
+
+    private BlocklyView blocklyView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 1. חובה קודם לטעון את ה-Layout שמכיל את ה-BlocklyView:
+        setContentView(R.layout.activity_main);
+
+        // 2. עכשיו מוצאים את ה-View לפי ה-ID שהוגדר ב-XML:
+        blocklyView = findViewById(R.id.blocklyView);
+
+        // 3. מאתחלים משני קבצי ה-JSON ב-assets:
+        blocklyView.initFromAssets("blocks.json", "categories.json");
+    }
+}
 ```
 
 זה הכל! הפעל את האפליקציה, גרור את הבלוקים ללוח, חבר אותם יחד וצפה בקוד ה-C שנוצר אוטומטית!
