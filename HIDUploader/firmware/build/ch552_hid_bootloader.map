@@ -70,7 +70,7 @@ C:   00000073  l_DSEG
 C:   00000099  l_CONST                         
 C:   000000C6  l_SSEG                          
 C:   00000100  l_IRAM                          
-C:   00000830  l_CSEG                          
+C:   000008A0  l_CSEG                          
 C:   00002C00  s_HOME                          
 C:   00002C4E  s_GSINIT0                       
 C:   00002C51  s_GSINIT1                       
@@ -81,8 +81,8 @@ C:   00002CA7  s_GSINIT
 C:   00002CA7  s_GSINIT5                       
 C:   00002CBB  s_GSFINAL                       
 C:   00002CBE  s_CSEG                          
-C:   000034EE  s_CONST                         
-C:   00003587  s_XINIT                         
+C:   0000355E  s_CONST                         
+C:   000035F7  s_XINIT                         
 
 ASxxxx Linker V05.50.4-SDLD,  page 3.
 Hexadecimal  [32-Bits]
@@ -543,33 +543,34 @@ Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
 --------------------------------        ----        ----        ------- ----- ------------
-CSEG                                00002CBE    00000830 =        2096. bytes (REL,CON,CODE)
+CSEG                                00002CBE    000008A0 =        2208. bytes (REL,CON,CODE)
 
          Value  Global                             Global Defined In Module
          -----  --------------------------------   ------------------------
 C:   00002CBE  _IAP_WriteWord                     bootloader
 C:   00002D09  _IAP_ReadWord                      bootloader
 C:   00002D24  _IAP_CalculateCRC16                bootloader
-C:   00002D87  _USB_Init                          bootloader
-C:   00002F3B  _USB_Process                       bootloader
-C:   00003007  _USB_Available                     bootloader
-C:   0000300B  _USB_GetRxBuffer                   bootloader
-C:   00003012  _USB_ReleaseRx                     bootloader
-C:   00003019  _USB_SendReport                    bootloader
-C:   0000303B  _USB_Shutdown                      bootloader
-C:   00003350  _main                              bootloader
-C:   0000343F  ___memcpy                          __memcpy
-C:   00003494  _memset                            _memset
-C:   000034B3  __gptrput                          _gptrput
-C:   000034CE  __gptrget                          _gptrget
-C:   000034EA  ___sdcc_external_startup           _startup
+C:   00002D87  _IAP_ErasePage                     bootloader
+C:   00002DD1  _USB_Init                          bootloader
+C:   00002F85  _USB_Process                       bootloader
+C:   00003051  _USB_Available                     bootloader
+C:   00003055  _USB_GetRxBuffer                   bootloader
+C:   0000305C  _USB_ReleaseRx                     bootloader
+C:   00003063  _USB_SendReport                    bootloader
+C:   00003085  _USB_Shutdown                      bootloader
+C:   000033C0  _main                              bootloader
+C:   000034AF  ___memcpy                          __memcpy
+C:   00003504  _memset                            _memset
+C:   00003523  __gptrput                          _gptrput
+C:   0000353E  __gptrget                          _gptrget
+C:   0000355A  ___sdcc_external_startup           _startup
 
 ASxxxx Linker V05.50.4-SDLD,  page 23.
 Hexadecimal  [32-Bits]
 
 Area                                    Addr        Size        Decimal Bytes (Attributes)
 --------------------------------        ----        ----        ------- ----- ------------
-CONST                               000034EE    00000099 =         153. bytes (REL,CON,CODE)
+CONST                               0000355E    00000099 =         153. bytes (REL,CON,CODE)
 
          Value  Global                             Global Defined In Module
          -----  --------------------------------   ------------------------
