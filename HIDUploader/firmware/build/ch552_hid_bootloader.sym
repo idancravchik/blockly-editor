@@ -226,7 +226,7 @@ Symbol Table
  19 _CfgDesc                                                       000034 R
     _DPH                                                        =  000083 G
     _DPL                                                        =  000082 G
- 18 _DelayMs                                                       0003D9 R
+ 18 _DelayMs                                                       0003D3 R
  19 _DevDesc                                                       000000 R
     _EA                                                         =  0000AF G
     _ES                                                         =  0000AC G
@@ -249,13 +249,13 @@ Symbol Table
     _F1                                                         =  0000D1 G
     _GLOBAL_CFG                                                 =  0000B1 G
     _GPIO_IE                                                    =  0000C7 G
- 18 _Handle_EP0_Setup                                              000161 R
- 18 _IAP_CalculateCRC16                                            0000BB GR
+ 18 _Handle_EP0_Setup                                              00015B R
+ 18 _IAP_CalculateCRC16                                            0000B5 GR
   6 _IAP_CalculateCRC16_PARM_2                                     000000 GR
   6 _IAP_CalculateCRC16_i_20000_28                                 000002 R
  18 _IAP_ErasePage                                                 000000 GR
- 18 _IAP_ReadWord                                                  0000A0 GR
- 18 _IAP_WriteWord                                                 00004D GR
+ 18 _IAP_ReadWord                                                  00009A GR
+ 18 _IAP_WriteWord                                                 00004A GR
   6 _IAP_WriteWord_PARM_2                                          000000 GR
     _IE                                                         =  0000A8 G
     _IE0                                                        =  000089 G
@@ -275,7 +275,7 @@ Symbol Table
     _IP_EX                                                      =  0000E9 G
     _IT0                                                        =  000088 G
     _IT1                                                        =  00008A G
- 18 _JumpToApp                                                     000404 R
+ 18 _JumpToApp                                                     0003FE R
     _MISO                                                       =  000096 G
     _MOSI                                                       =  000095 G
     _OV                                                         =  0000D2 G
@@ -327,7 +327,7 @@ Symbol Table
     _PWM_DATA2                                                  =  00009B G
     _PX0                                                        =  0000B8 G
     _PX1                                                        =  0000BA G
- 18 _ProcessPacket                                                 000411 R
+ 18 _ProcessPacket                                                 00040B R
   5 _ProcessPacket_addr_10000_126                                  000010 R
   5 _ProcessPacket_cmd_10000_126                                   00000E R
   5 _ProcessPacket_end_page_40000_136                              000014 R
@@ -489,22 +489,22 @@ Symbol Table
     _UIF_HST_SOF                                                =  0000DB G
     _UIF_SUSPEND                                                =  0000DA G
     _UIF_TRANSFER                                               =  0000D9 G
- 18 _USB_Available                                                 00039E GR
+ 18 _USB_Available                                                 000398 GR
     _USB_CTRL                                                   =  0000E2 G
     _USB_C_CTRL                                                 =  000091 G
     _USB_DEV_AD                                                 =  0000E3 G
- 18 _USB_GetRxBuffer                                               0003A2 GR
+ 18 _USB_GetRxBuffer                                               00039C GR
     _USB_INT_EN                                                 =  0000E1 G
     _USB_INT_FG                                                 =  0000D8 G
     _USB_INT_ST                                                 =  0000D9 G
- 18 _USB_Init                                                      00011E GR
+ 18 _USB_Init                                                      000118 GR
     _USB_MIS_ST                                                 =  0000DA G
- 18 _USB_Process                                                   0002D2 GR
+ 18 _USB_Process                                                   0002CC GR
     _USB_RX_LEN                                                 =  0000DB G
- 18 _USB_ReleaseRx                                                 0003A9 GR
- 18 _USB_SendReport                                                0003B0 GR
+ 18 _USB_ReleaseRx                                                 0003A3 GR
+ 18 _USB_SendReport                                                0003AA GR
   5 _USB_SendReport_PARM_2                                         000007 GR
- 18 _USB_Shutdown                                                  0003D2 GR
+ 18 _USB_Shutdown                                                  0003CC GR
     _U_IS_NAK                                                   =  0000DF G
     _U_SIE_FREE                                                 =  0000DD G
     _U_TOG_OK                                                   =  0000DE G
@@ -527,7 +527,7 @@ Symbol Table
   7 __start__stack                                                 000000 GR
   5 _is_unlocked                                                   000008 R
   5 _last_erased_page                                              000009 R
- 18 _main                                                          000766 GR
+ 18 _main                                                          000760 GR
   A _main_sloc0_1_0                                                000000 R
     _memset                                                        ****** GX
     _memset_PARM_2                                                 ****** GX
@@ -783,7 +783,7 @@ Area Table
   15 GSINIT5                                    size      0   flags   20
   16 GSINIT                                     size     1A   flags   20
   17 GSFINAL                                    size      3   flags   20
-  18 CSEG                                       size    855   flags   20
+  18 CSEG                                       size    84F   flags   20
   19 CONST                                      size     99   flags   20
   1A XINIT                                      size      0   flags   20
   1B CABS                                       size      0   flags   28

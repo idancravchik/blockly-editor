@@ -770,7 +770,7 @@ __sdcc_program_exit:
 ;status        Allocated to registers r7 
 ;ea_saved      Allocated to registers r5 
 ;------------------------------------------------------------
-;	iap_flash.c:3: uint8_t IAP_ErasePage(uint16_t addr) {
+;	iap_flash.c:11: uint8_t IAP_ErasePage(uint16_t addr) {
 ;	-----------------------------------------
 ;	 function IAP_ErasePage
 ;	-----------------------------------------
@@ -784,67 +784,65 @@ _IAP_ErasePage:
 	ar1 = 0x01
 	ar0 = 0x00
 	mov	r7, dph
-;	iap_flash.c:8: if (addr >= BOOTLOADER_START) {
+;	iap_flash.c:16: if (addr >= BOOTLOADER_START) {
 	mov	a,#0x100 - 0x2c
 	add	a,r7
 	jnc	00102$
-;	iap_flash.c:9: return 0x03; // Out of bounds error
+;	iap_flash.c:17: return 0x03; // Out of bounds error
 	mov	dpl, #0x03
 	ret
 00102$:
-;	iap_flash.c:13: addr &= ~0x03FF;
+;	iap_flash.c:21: addr &= ~0x03FF;
 	mov	r6,#0x00
 	anl	ar7,#0xfc
-;	iap_flash.c:16: ea_saved = EA;
+;	iap_flash.c:24: ea_saved = EA;
 	mov	c,_EA
 	clr	a
 	rlc	a
 	mov	r5,a
-;	iap_flash.c:17: EA = 0;
+;	iap_flash.c:25: EA = 0;
 ;	assignBit
 	clr	_EA
-;	iap_flash.c:20: SAFE_MOD = 0x55;
+;	iap_flash.c:28: SAFE_MOD = 0x55;
 	mov	_SAFE_MOD,#0x55
-;	iap_flash.c:21: SAFE_MOD = 0xAA;
+;	iap_flash.c:29: SAFE_MOD = 0xAA;
 	mov	_SAFE_MOD,#0xaa
-;	iap_flash.c:22: GLOBAL_CFG |= bCODE_WE;
+;	iap_flash.c:30: GLOBAL_CFG |= bCODE_WE;
 	orl	_GLOBAL_CFG,#0x08
-;	iap_flash.c:23: SAFE_MOD = 0x00;
-	mov	_SAFE_MOD,#0x00
-;	iap_flash.c:26: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
+;	iap_flash.c:33: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
 	mov	_ROM_ADDR_L,r6
-;	iap_flash.c:27: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
+;	iap_flash.c:34: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
 	mov	_ROM_ADDR_H,r7
-;	iap_flash.c:30: ROM_CTRL = ROM_CMD_ERASE;
+;	iap_flash.c:37: ROM_CTRL = ROM_CMD_ERASE;
 	mov	_ROM_CTRL,#0xa6
-;	iap_flash.c:33: status = ROM_STATUS;
+;	iap_flash.c:40: status = ROM_STATUS;
 	mov	r7,_ROM_CTRL
-;	iap_flash.c:36: SAFE_MOD = 0x55;
+;	iap_flash.c:43: SAFE_MOD = 0x55;
 	mov	_SAFE_MOD,#0x55
-;	iap_flash.c:37: SAFE_MOD = 0xAA;
+;	iap_flash.c:44: SAFE_MOD = 0xAA;
 	mov	_SAFE_MOD,#0xaa
-;	iap_flash.c:38: GLOBAL_CFG &= ~bCODE_WE;
+;	iap_flash.c:45: GLOBAL_CFG &= ~bCODE_WE;
 	anl	_GLOBAL_CFG,#0xf7
-;	iap_flash.c:39: SAFE_MOD = 0x00;
+;	iap_flash.c:46: SAFE_MOD = 0x00;
 	mov	_SAFE_MOD,#0x00
-;	iap_flash.c:42: EA = ea_saved;
+;	iap_flash.c:49: EA = ea_saved;
 ;	assignBit
 	mov	a,r5
 	add	a,#0xff
 	mov	_EA,c
-;	iap_flash.c:45: if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
+;	iap_flash.c:52: if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
 	mov	a,r7
 	jb	acc.1,00103$
 	mov	a,r7
 	jb	acc.6,00104$
 00103$:
-;	iap_flash.c:46: return 0x04; // Erase error
+;	iap_flash.c:53: return 0x04; // Erase error
 	mov	dpl, #0x04
 	ret
 00104$:
-;	iap_flash.c:48: return 0x00;
+;	iap_flash.c:55: return 0x00;
 	mov	dpl, #0x00
-;	iap_flash.c:49: }
+;	iap_flash.c:56: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'IAP_WriteWord'
@@ -854,77 +852,75 @@ _IAP_ErasePage:
 ;status        Allocated to registers r7 
 ;ea_saved      Allocated to registers r5 
 ;------------------------------------------------------------
-;	iap_flash.c:51: uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
+;	iap_flash.c:58: uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
 ;	-----------------------------------------
 ;	 function IAP_WriteWord
 ;	-----------------------------------------
 _IAP_WriteWord:
 	mov	r6, dpl
 	mov	r7, dph
-;	iap_flash.c:56: if (addr >= BOOTLOADER_START) {
+;	iap_flash.c:63: if (addr >= BOOTLOADER_START) {
 	mov	a,#0x100 - 0x2c
 	add	a,r7
 	jnc	00102$
-;	iap_flash.c:57: return 0x03; // Out of bounds error
+;	iap_flash.c:64: return 0x03; // Out of bounds error
 	mov	dpl, #0x03
 	ret
 00102$:
-;	iap_flash.c:61: addr &= ~0x0001;
+;	iap_flash.c:68: addr &= ~0x0001;
 	anl	ar6,#0xfe
-;	iap_flash.c:64: ea_saved = EA;
+;	iap_flash.c:71: ea_saved = EA;
 	mov	c,_EA
 	clr	a
 	rlc	a
 	mov	r5,a
-;	iap_flash.c:65: EA = 0;
+;	iap_flash.c:72: EA = 0;
 ;	assignBit
 	clr	_EA
-;	iap_flash.c:68: SAFE_MOD = 0x55;
+;	iap_flash.c:75: SAFE_MOD = 0x55;
 	mov	_SAFE_MOD,#0x55
-;	iap_flash.c:69: SAFE_MOD = 0xAA;
+;	iap_flash.c:76: SAFE_MOD = 0xAA;
 	mov	_SAFE_MOD,#0xaa
-;	iap_flash.c:70: GLOBAL_CFG |= bCODE_WE;
+;	iap_flash.c:77: GLOBAL_CFG |= bCODE_WE;
 	orl	_GLOBAL_CFG,#0x08
-;	iap_flash.c:71: SAFE_MOD = 0x00;
-	mov	_SAFE_MOD,#0x00
-;	iap_flash.c:74: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
+;	iap_flash.c:80: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
 	mov	_ROM_ADDR_L,r6
-;	iap_flash.c:75: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
+;	iap_flash.c:81: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
 	mov	_ROM_ADDR_H,r7
-;	iap_flash.c:76: ROM_DATA_L = (uint8_t)(data_word & 0xFF);
+;	iap_flash.c:82: ROM_DATA_L = (uint8_t)(data_word & 0xFF);
 	mov	_ROM_DATA_L,_IAP_WriteWord_PARM_2
-;	iap_flash.c:77: ROM_DATA_H = (uint8_t)((data_word >> 8) & 0xFF);
+;	iap_flash.c:83: ROM_DATA_H = (uint8_t)((data_word >> 8) & 0xFF);
 	mov	_ROM_DATA_H,(_IAP_WriteWord_PARM_2 + 1)
-;	iap_flash.c:80: ROM_CTRL = ROM_CMD_WRITE;
+;	iap_flash.c:86: ROM_CTRL = ROM_CMD_WRITE;
 	mov	_ROM_CTRL,#0x9a
-;	iap_flash.c:83: status = ROM_STATUS;
+;	iap_flash.c:89: status = ROM_STATUS;
 	mov	r7,_ROM_CTRL
-;	iap_flash.c:86: SAFE_MOD = 0x55;
+;	iap_flash.c:92: SAFE_MOD = 0x55;
 	mov	_SAFE_MOD,#0x55
-;	iap_flash.c:87: SAFE_MOD = 0xAA;
+;	iap_flash.c:93: SAFE_MOD = 0xAA;
 	mov	_SAFE_MOD,#0xaa
-;	iap_flash.c:88: GLOBAL_CFG &= ~bCODE_WE;
+;	iap_flash.c:94: GLOBAL_CFG &= ~bCODE_WE;
 	anl	_GLOBAL_CFG,#0xf7
-;	iap_flash.c:89: SAFE_MOD = 0x00;
+;	iap_flash.c:95: SAFE_MOD = 0x00;
 	mov	_SAFE_MOD,#0x00
-;	iap_flash.c:92: EA = ea_saved;
+;	iap_flash.c:98: EA = ea_saved;
 ;	assignBit
 	mov	a,r5
 	add	a,#0xff
 	mov	_EA,c
-;	iap_flash.c:95: if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
+;	iap_flash.c:101: if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
 	mov	a,r7
 	jb	acc.1,00103$
 	mov	a,r7
 	jb	acc.6,00104$
 00103$:
-;	iap_flash.c:96: return 0x04; // Write error
+;	iap_flash.c:102: return 0x04; // Write error
 	mov	dpl, #0x04
 	ret
 00104$:
-;	iap_flash.c:98: return 0x00;
+;	iap_flash.c:104: return 0x00;
 	mov	dpl, #0x00
-;	iap_flash.c:99: }
+;	iap_flash.c:105: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'IAP_ReadWord'
@@ -934,25 +930,25 @@ _IAP_WriteWord:
 ;high          Allocated to registers 
 ;ptr           Allocated to registers r6 r7 
 ;------------------------------------------------------------
-;	iap_flash.c:101: uint16_t IAP_ReadWord(uint16_t addr) {
+;	iap_flash.c:107: uint16_t IAP_ReadWord(uint16_t addr) {
 ;	-----------------------------------------
 ;	 function IAP_ReadWord
 ;	-----------------------------------------
 _IAP_ReadWord:
-;	iap_flash.c:103: __code const uint8_t *ptr = (__code const uint8_t *)addr;
-;	iap_flash.c:104: low = *ptr;
+;	iap_flash.c:109: __code const uint8_t *ptr = (__code const uint8_t *)addr;
+;	iap_flash.c:110: low = *ptr;
 	mov	r6,dpl
 	mov  r7,dph
 	clr	a
 	movc	a,@a+dptr
 	mov	r5,a
-;	iap_flash.c:105: high = *(ptr + 1);
+;	iap_flash.c:111: high = *(ptr + 1);
 	mov	dpl,r6
 	mov	dph,r7
 	inc	dptr
 	clr	a
 	movc	a,@a+dptr
-;	iap_flash.c:106: return ((uint16_t)high << 8) | low;
+;	iap_flash.c:112: return ((uint16_t)high << 8) | low;
 	mov	r6,a
 	clr	a
 	mov	r7,a
@@ -963,7 +959,7 @@ _IAP_ReadWord:
 	mov	a,r4
 	orl	a,r6
 	mov	dph,a
-;	iap_flash.c:107: }
+;	iap_flash.c:113: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'IAP_CalculateCRC16'
@@ -976,18 +972,18 @@ _IAP_ReadWord:
 ;byte          Allocated to registers 
 ;b             Allocated to registers r1 
 ;------------------------------------------------------------
-;	iap_flash.c:109: uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length) {
+;	iap_flash.c:115: uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length) {
 ;	-----------------------------------------
 ;	 function IAP_CalculateCRC16
 ;	-----------------------------------------
 _IAP_CalculateCRC16:
 	mov	r6, dpl
 	mov	r7, dph
-;	iap_flash.c:110: uint16_t crc = 0xFFFF;
+;	iap_flash.c:116: uint16_t crc = 0xFFFF;
 	mov	r4,#0xff
 	mov	r5,#0xff
-;	iap_flash.c:111: __code const uint8_t *ptr = (__code const uint8_t *)start_addr;
-;	iap_flash.c:113: for (uint16_t i = 0; i < length; i++) {
+;	iap_flash.c:117: __code const uint8_t *ptr = (__code const uint8_t *)start_addr;
+;	iap_flash.c:119: for (uint16_t i = 0; i < length; i++) {
 	clr	a
 	mov	_IAP_CalculateCRC16_i_20000_28,a
 	mov	(_IAP_CalculateCRC16_i_20000_28 + 1),a
@@ -998,7 +994,7 @@ _IAP_CalculateCRC16:
 	mov	a,(_IAP_CalculateCRC16_i_20000_28 + 1)
 	subb	a,(_IAP_CalculateCRC16_PARM_2 + 1)
 	jnc	00105$
-;	iap_flash.c:114: uint8_t byte = *ptr++;
+;	iap_flash.c:120: uint8_t byte = *ptr++;
 	mov	dpl,r6
 	mov	dph,r7
 	clr	a
@@ -1007,23 +1003,23 @@ _IAP_CalculateCRC16:
 	inc	dptr
 	mov	r6,dpl
 	mov	r7,dph
-;	iap_flash.c:115: crc ^= ((uint16_t)byte << 8);
+;	iap_flash.c:121: crc ^= ((uint16_t)byte << 8);
 	mov	ar0,r1
 	mov	ar1,r0
 	clr	a
 	xrl	ar4,a
 	mov	a,r1
 	xrl	ar5,a
-;	iap_flash.c:116: for (uint8_t b = 0; b < 8; b++) {
+;	iap_flash.c:122: for (uint8_t b = 0; b < 8; b++) {
 	mov	r1,#0x00
 00107$:
 	cjne	r1,#0x08,00152$
 00152$:
 	jnc	00111$
-;	iap_flash.c:117: if (crc & 0x8000) {
+;	iap_flash.c:123: if (crc & 0x8000) {
 	mov	a,r5
 	jnb	acc.7,00102$
-;	iap_flash.c:118: crc = (crc << 1) ^ 0x1021;
+;	iap_flash.c:124: crc = (crc << 1) ^ 0x1021;
 	mov	a,r4
 	add	a,r4
 	mov	r0,a
@@ -1036,7 +1032,7 @@ _IAP_CalculateCRC16:
 	mov	ar5,r3
 	sjmp	00108$
 00102$:
-;	iap_flash.c:120: crc <<= 1;
+;	iap_flash.c:126: crc <<= 1;
 	mov	a,r4
 	add	a,r4
 	mov	r4,a
@@ -1044,21 +1040,21 @@ _IAP_CalculateCRC16:
 	rlc	a
 	mov	r5,a
 00108$:
-;	iap_flash.c:116: for (uint8_t b = 0; b < 8; b++) {
+;	iap_flash.c:122: for (uint8_t b = 0; b < 8; b++) {
 	inc	r1
 	sjmp	00107$
 00111$:
-;	iap_flash.c:113: for (uint16_t i = 0; i < length; i++) {
+;	iap_flash.c:119: for (uint16_t i = 0; i < length; i++) {
 	inc	_IAP_CalculateCRC16_i_20000_28
 	clr	a
 	cjne	a,_IAP_CalculateCRC16_i_20000_28,00110$
 	inc	(_IAP_CalculateCRC16_i_20000_28 + 1)
 	sjmp	00110$
 00105$:
-;	iap_flash.c:124: return crc;
+;	iap_flash.c:130: return crc;
 	mov	dpl, r4
 	mov	dph, r5
-;	iap_flash.c:125: }
+;	iap_flash.c:131: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'USB_Init'

@@ -1,5 +1,13 @@
 #include "iap_flash.h"
 
+#ifndef ROM_CMD_ERASE
+#define ROM_CMD_ERASE 0xA6
+#endif
+
+#ifndef ROM_CMD_WRITE
+#define ROM_CMD_WRITE 0x9A
+#endif
+
 uint8_t IAP_ErasePage(uint16_t addr) {
     uint8_t status;
     uint8_t ea_saved;
@@ -20,13 +28,12 @@ uint8_t IAP_ErasePage(uint16_t addr) {
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
     GLOBAL_CFG |= bCODE_WE;
-    SAFE_MOD = 0x00;
 
     // Load page address
     ROM_ADDR_L = (uint8_t)(addr & 0xFF);
     ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
 
-    // Trigger flash page erase
+    // Trigger flash page erase (0xA6)
     ROM_CTRL = ROM_CMD_ERASE;
 
     // Read result status
@@ -68,7 +75,6 @@ uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
     GLOBAL_CFG |= bCODE_WE;
-    SAFE_MOD = 0x00;
 
     // Load address and 16-bit word
     ROM_ADDR_L = (uint8_t)(addr & 0xFF);
