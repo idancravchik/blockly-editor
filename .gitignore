@@ -60,3 +60,5 @@ local.properties
 *.aab
 captures/
 
+node_modules
+
