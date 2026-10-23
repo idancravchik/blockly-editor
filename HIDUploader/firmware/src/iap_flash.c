@@ -73,3 +73,44 @@ uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length) {
     }
     return crc;
 }
+
+#ifndef ROM_CMD_ERASE
+#define ROM_CMD_ERASE 0xA6
+#endif
+
+uint8_t IAP_ErasePage(uint16_t addr) {
+    uint8_t status;
+    uint8_t ea_saved;
+
+    if (addr >= BOOTLOADER_START) return 0x03;
+
+    addr &= ~0x03FF; // יישור לבלוק 1KB
+
+    ea_saved = EA;
+    EA = 0;
+
+    // כניסה ל-Safe Mode
+    SAFE_MOD = 0x55;
+    SAFE_MOD = 0xAA;
+    GLOBAL_CFG |= bCODE_WE;
+
+    ROM_ADDR_L = (uint8_t)(addr & 0xFF);
+    ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
+
+    ROM_CTRL = ROM_CMD_ERASE; // ביצוע המחיקה כשה-Safe Mode עדיין פתוח!
+
+    status = ROM_STATUS;
+
+    // נעילה רק בסיום הפעולה
+    SAFE_MOD = 0x55;
+    SAFE_MOD = 0xAA;
+    GLOBAL_CFG &= ~bCODE_WE;
+    SAFE_MOD = 0x00;
+
+    EA = ea_saved;
+
+    if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
+        return 0x04;
+    }
+    return 0x00;
+}

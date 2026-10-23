@@ -78,29 +78,39 @@ static void ProcessPacket(void) {
             break;
 
         case CMD_WRITE_BLOCK:
-            if (!is_unlocked) {
-                reply_buf[59] = STATUS_LOCKED;
-                break;
-            }
+        if (!is_unlocked) {
+        reply_buf[59] = STATUS_LOCKED;
+        break;
+        }
 
-            if (addr + len > BOOTLOADER_START) {
-                reply_buf[59] = STATUS_OOB; // Protect bootloader
-                break;
-            }
-
-            // Write 16-bit words
-            {
-                uint8_t err = 0;
-                for (uint8_t i = 0; i < len; i += 2) {
-                    uint16_t word = rx[5 + i] | ((uint16_t)rx[6 + i] << 8);
-                    if (IAP_WriteWord(addr + i, word) != 0) {
-                        err = 1;
-                        break;
-                    }
-                }
-                reply_buf[59] = err ? STATUS_WRITE_ERR : STATUS_OK;
-            }
+        if (addr + len > BOOTLOADER_START) {
+            reply_buf[59] = STATUS_OOB;
             break;
+        }
+
+        // מחיקת עמוד 1KB בכל פעם שמתחילים עמוד חדש
+        if ((addr % 1024) == 0) {
+            if (IAP_ErasePage(addr) != 0) {
+                reply_buf[59] = STATUS_WRITE_ERR;
+                break;
+            }
+        }
+
+        // כתיבת המילים (הקוד הקיים שלך)
+        {
+            uint8_t err = 0;
+            for (uint8_t i = 0; i < len; i += 2) {
+                uint16_t word = rx[5 + i] | ((uint16_t)rx[6 + i] << 8);
+                if (IAP_WriteWord(addr + i, word) != 0) {
+                    err = 1;
+                    break;
+                }
+            }
+            reply_buf[59] = err ? STATUS_WRITE_ERR : STATUS_OK;
+        }
+        break;
+
+        
 
         case CMD_VERIFY_CRC:
             {

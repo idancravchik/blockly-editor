@@ -17,4 +17,6 @@ uint16_t IAP_ReadWord(uint16_t addr);
 // Computes 16-bit CRC over user flash region
 uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length);
 
+uint8_t IAP_ErasePage(uint16_t addr);
+
 #endif // __IAP_FLASH_H__
