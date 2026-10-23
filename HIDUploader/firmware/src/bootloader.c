@@ -25,6 +25,7 @@
 #define BOOT_PIN_BIT     2
 
 static uint8_t is_unlocked = 0;
+static uint16_t last_erased_page = 0xFFFF;
 static __xdata uint8_t reply_buf[64];
 
 static void DelayMs(uint16_t ms) {
@@ -70,6 +71,7 @@ static void ProcessPacket(void) {
         case CMD_UNLOCK:
             if (rx[5] == 0x5A && rx[6] == 0xC3 && rx[7] == 0x3C && rx[8] == 0xA5) {
                 is_unlocked = 1;
+                last_erased_page = 0xFFFF; // Reset page erase tracking for new session
                 reply_buf[59] = STATUS_OK;
             } else {
                 is_unlocked = 0;
@@ -86,6 +88,27 @@ static void ProcessPacket(void) {
             if (addr + len > BOOTLOADER_START) {
                 reply_buf[59] = STATUS_OOB; // Protect bootloader
                 break;
+            }
+
+            // Ensure every 1KB page covering [addr, addr + len - 1] is erased before writing
+            {
+                uint8_t erase_err = 0;
+                uint16_t page = addr & ~0x03FF;
+                uint16_t end_page = (addr + len - 1) & ~0x03FF;
+                while (page <= end_page) {
+                    if (last_erased_page == 0xFFFF || page > last_erased_page) {
+                        if (IAP_ErasePage(page) != 0) {
+                            erase_err = 1;
+                            break;
+                        }
+                        last_erased_page = page;
+                    }
+                    page += 0x0400;
+                }
+                if (erase_err) {
+                    reply_buf[59] = STATUS_WRITE_ERR;
+                    break;
+                }
             }
 
             // Write 16-bit words

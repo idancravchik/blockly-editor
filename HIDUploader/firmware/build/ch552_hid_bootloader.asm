@@ -266,6 +266,7 @@
 	.globl _Ep1Buffer
 	.globl _Ep0Buffer
 	.globl _USB_SendReport_PARM_2
+	.globl _IAP_ErasePage
 	.globl _IAP_WriteWord
 	.globl _IAP_ReadWord
 	.globl _IAP_CalculateCRC16
@@ -559,19 +560,25 @@ _USB_SendReport_PARM_2:
 	.ds 1
 _is_unlocked:
 	.ds 1
-_ProcessPacket_rx_10000_119:
-	.ds 3
-_ProcessPacket_cmd_10000_119:
-	.ds 1
-_ProcessPacket_seq_10000_119:
-	.ds 1
-_ProcessPacket_addr_10000_119:
+_last_erased_page:
 	.ds 2
-_ProcessPacket_len_10000_119:
+_ProcessPacket_rx_10000_126:
+	.ds 3
+_ProcessPacket_cmd_10000_126:
 	.ds 1
-_ProcessPacket_err_40000_129:
+_ProcessPacket_seq_10000_126:
 	.ds 1
-_ProcessPacket_i_50000_130:
+_ProcessPacket_addr_10000_126:
+	.ds 2
+_ProcessPacket_len_10000_126:
+	.ds 1
+_ProcessPacket_erase_err_40000_136:
+	.ds 1
+_ProcessPacket_end_page_40000_136:
+	.ds 2
+_ProcessPacket_err_40000_144:
+	.ds 1
+_ProcessPacket_i_50000_145:
 	.ds 1
 _ProcessPacket_sloc0_1_0:
 	.ds 1
@@ -583,13 +590,14 @@ _ProcessPacket_sloc2_1_0:
 ; overlayable items in internal ram
 ;--------------------------------------------------------
 	.area	OSEG    (OVR,DATA)
+	.area	OSEG    (OVR,DATA)
 _IAP_WriteWord_PARM_2:
 	.ds 2
 	.area	OSEG    (OVR,DATA)
 	.area	OSEG    (OVR,DATA)
 _IAP_CalculateCRC16_PARM_2:
 	.ds 2
-_IAP_CalculateCRC16_i_20000_21:
+_IAP_CalculateCRC16_i_20000_28:
 	.ds 2
 	.area	OSEG    (OVR,DATA)
 ;--------------------------------------------------------
@@ -736,6 +744,9 @@ sdcc_atomic_compare_exchange_gptr_impl::
 	mov	(_setup_tx_len + 1),a
 ;	bootloader.c:27: static uint8_t is_unlocked = 0;
 	mov	_is_unlocked,a
+;	bootloader.c:28: static uint16_t last_erased_page = 0xFFFF;
+	mov	_last_erased_page,#0xff
+	mov	(_last_erased_page + 1),#0xff
 	.area GSFINAL (CODE)
 	ljmp	__sdcc_program_startup
 ;--------------------------------------------------------
@@ -753,17 +764,17 @@ __sdcc_program_exit:
 ;--------------------------------------------------------
 	.area CSEG    (CODE)
 ;------------------------------------------------------------
-;Allocation info for local variables in function 'IAP_WriteWord'
+;Allocation info for local variables in function 'IAP_ErasePage'
 ;------------------------------------------------------------
-;data_word     Allocated with name '_IAP_WriteWord_PARM_2'
 ;addr          Allocated to registers r6 r7 
 ;status        Allocated to registers r7 
+;ea_saved      Allocated to registers r5 
 ;------------------------------------------------------------
-;	iap_flash.c:3: uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
+;	iap_flash.c:3: uint8_t IAP_ErasePage(uint16_t addr) {
 ;	-----------------------------------------
-;	 function IAP_WriteWord
+;	 function IAP_ErasePage
 ;	-----------------------------------------
-_IAP_WriteWord:
+_IAP_ErasePage:
 	ar7 = 0x07
 	ar6 = 0x06
 	ar5 = 0x05
@@ -772,39 +783,40 @@ _IAP_WriteWord:
 	ar2 = 0x02
 	ar1 = 0x01
 	ar0 = 0x00
-	mov	r6, dpl
 	mov	r7, dph
-;	iap_flash.c:7: if (addr >= BOOTLOADER_START) {
+;	iap_flash.c:8: if (addr >= BOOTLOADER_START) {
 	mov	a,#0x100 - 0x2c
 	add	a,r7
 	jnc	00102$
-;	iap_flash.c:8: return 0x03; // Out of bounds error
+;	iap_flash.c:9: return 0x03; // Out of bounds error
 	mov	dpl, #0x03
 	ret
 00102$:
-;	iap_flash.c:12: addr &= ~0x0001;
-	anl	ar6,#0xfe
-;	iap_flash.c:15: EA = 0;
+;	iap_flash.c:13: addr &= ~0x03FF;
+	mov	r6,#0x00
+	anl	ar7,#0xfc
+;	iap_flash.c:16: ea_saved = EA;
+	mov	c,_EA
+	clr	a
+	rlc	a
+	mov	r5,a
+;	iap_flash.c:17: EA = 0;
 ;	assignBit
 	clr	_EA
-;	iap_flash.c:18: SAFE_MOD = 0x55;
+;	iap_flash.c:20: SAFE_MOD = 0x55;
 	mov	_SAFE_MOD,#0x55
-;	iap_flash.c:19: SAFE_MOD = 0xAA;
+;	iap_flash.c:21: SAFE_MOD = 0xAA;
 	mov	_SAFE_MOD,#0xaa
-;	iap_flash.c:20: GLOBAL_CFG |= bCODE_WE;
+;	iap_flash.c:22: GLOBAL_CFG |= bCODE_WE;
 	orl	_GLOBAL_CFG,#0x08
-;	iap_flash.c:21: SAFE_MOD = 0x00;
+;	iap_flash.c:23: SAFE_MOD = 0x00;
 	mov	_SAFE_MOD,#0x00
-;	iap_flash.c:24: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
+;	iap_flash.c:26: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
 	mov	_ROM_ADDR_L,r6
-;	iap_flash.c:25: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
+;	iap_flash.c:27: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
 	mov	_ROM_ADDR_H,r7
-;	iap_flash.c:26: ROM_DATA_L = (uint8_t)(data_word & 0xFF);
-	mov	_ROM_DATA_L,_IAP_WriteWord_PARM_2
-;	iap_flash.c:27: ROM_DATA_H = (uint8_t)((data_word >> 8) & 0xFF);
-	mov	_ROM_DATA_H,(_IAP_WriteWord_PARM_2 + 1)
-;	iap_flash.c:30: ROM_CTRL = ROM_CMD_WRITE;
-	mov	_ROM_CTRL,#0x9a
+;	iap_flash.c:30: ROM_CTRL = ROM_CMD_ERASE;
+	mov	_ROM_CTRL,#0xa6
 ;	iap_flash.c:33: status = ROM_STATUS;
 	mov	r7,_ROM_CTRL
 ;	iap_flash.c:36: SAFE_MOD = 0x55;
@@ -815,22 +827,104 @@ _IAP_WriteWord:
 	anl	_GLOBAL_CFG,#0xf7
 ;	iap_flash.c:39: SAFE_MOD = 0x00;
 	mov	_SAFE_MOD,#0x00
-;	iap_flash.c:42: EA = 1;
+;	iap_flash.c:42: EA = ea_saved;
 ;	assignBit
-	setb	_EA
+	mov	a,r5
+	add	a,#0xff
+	mov	_EA,c
 ;	iap_flash.c:45: if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
 	mov	a,r7
 	jb	acc.1,00103$
 	mov	a,r7
 	jb	acc.6,00104$
 00103$:
-;	iap_flash.c:46: return 0x04; // Write error
+;	iap_flash.c:46: return 0x04; // Erase error
 	mov	dpl, #0x04
 	ret
 00104$:
 ;	iap_flash.c:48: return 0x00;
 	mov	dpl, #0x00
 ;	iap_flash.c:49: }
+	ret
+;------------------------------------------------------------
+;Allocation info for local variables in function 'IAP_WriteWord'
+;------------------------------------------------------------
+;data_word     Allocated with name '_IAP_WriteWord_PARM_2'
+;addr          Allocated to registers r6 r7 
+;status        Allocated to registers r7 
+;ea_saved      Allocated to registers r5 
+;------------------------------------------------------------
+;	iap_flash.c:51: uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
+;	-----------------------------------------
+;	 function IAP_WriteWord
+;	-----------------------------------------
+_IAP_WriteWord:
+	mov	r6, dpl
+	mov	r7, dph
+;	iap_flash.c:56: if (addr >= BOOTLOADER_START) {
+	mov	a,#0x100 - 0x2c
+	add	a,r7
+	jnc	00102$
+;	iap_flash.c:57: return 0x03; // Out of bounds error
+	mov	dpl, #0x03
+	ret
+00102$:
+;	iap_flash.c:61: addr &= ~0x0001;
+	anl	ar6,#0xfe
+;	iap_flash.c:64: ea_saved = EA;
+	mov	c,_EA
+	clr	a
+	rlc	a
+	mov	r5,a
+;	iap_flash.c:65: EA = 0;
+;	assignBit
+	clr	_EA
+;	iap_flash.c:68: SAFE_MOD = 0x55;
+	mov	_SAFE_MOD,#0x55
+;	iap_flash.c:69: SAFE_MOD = 0xAA;
+	mov	_SAFE_MOD,#0xaa
+;	iap_flash.c:70: GLOBAL_CFG |= bCODE_WE;
+	orl	_GLOBAL_CFG,#0x08
+;	iap_flash.c:71: SAFE_MOD = 0x00;
+	mov	_SAFE_MOD,#0x00
+;	iap_flash.c:74: ROM_ADDR_L = (uint8_t)(addr & 0xFF);
+	mov	_ROM_ADDR_L,r6
+;	iap_flash.c:75: ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
+	mov	_ROM_ADDR_H,r7
+;	iap_flash.c:76: ROM_DATA_L = (uint8_t)(data_word & 0xFF);
+	mov	_ROM_DATA_L,_IAP_WriteWord_PARM_2
+;	iap_flash.c:77: ROM_DATA_H = (uint8_t)((data_word >> 8) & 0xFF);
+	mov	_ROM_DATA_H,(_IAP_WriteWord_PARM_2 + 1)
+;	iap_flash.c:80: ROM_CTRL = ROM_CMD_WRITE;
+	mov	_ROM_CTRL,#0x9a
+;	iap_flash.c:83: status = ROM_STATUS;
+	mov	r7,_ROM_CTRL
+;	iap_flash.c:86: SAFE_MOD = 0x55;
+	mov	_SAFE_MOD,#0x55
+;	iap_flash.c:87: SAFE_MOD = 0xAA;
+	mov	_SAFE_MOD,#0xaa
+;	iap_flash.c:88: GLOBAL_CFG &= ~bCODE_WE;
+	anl	_GLOBAL_CFG,#0xf7
+;	iap_flash.c:89: SAFE_MOD = 0x00;
+	mov	_SAFE_MOD,#0x00
+;	iap_flash.c:92: EA = ea_saved;
+;	assignBit
+	mov	a,r5
+	add	a,#0xff
+	mov	_EA,c
+;	iap_flash.c:95: if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
+	mov	a,r7
+	jb	acc.1,00103$
+	mov	a,r7
+	jb	acc.6,00104$
+00103$:
+;	iap_flash.c:96: return 0x04; // Write error
+	mov	dpl, #0x04
+	ret
+00104$:
+;	iap_flash.c:98: return 0x00;
+	mov	dpl, #0x00
+;	iap_flash.c:99: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'IAP_ReadWord'
@@ -840,25 +934,25 @@ _IAP_WriteWord:
 ;high          Allocated to registers 
 ;ptr           Allocated to registers r6 r7 
 ;------------------------------------------------------------
-;	iap_flash.c:51: uint16_t IAP_ReadWord(uint16_t addr) {
+;	iap_flash.c:101: uint16_t IAP_ReadWord(uint16_t addr) {
 ;	-----------------------------------------
 ;	 function IAP_ReadWord
 ;	-----------------------------------------
 _IAP_ReadWord:
-;	iap_flash.c:53: __code const uint8_t *ptr = (__code const uint8_t *)addr;
-;	iap_flash.c:54: low = *ptr;
+;	iap_flash.c:103: __code const uint8_t *ptr = (__code const uint8_t *)addr;
+;	iap_flash.c:104: low = *ptr;
 	mov	r6,dpl
 	mov  r7,dph
 	clr	a
 	movc	a,@a+dptr
 	mov	r5,a
-;	iap_flash.c:55: high = *(ptr + 1);
+;	iap_flash.c:105: high = *(ptr + 1);
 	mov	dpl,r6
 	mov	dph,r7
 	inc	dptr
 	clr	a
 	movc	a,@a+dptr
-;	iap_flash.c:56: return ((uint16_t)high << 8) | low;
+;	iap_flash.c:106: return ((uint16_t)high << 8) | low;
 	mov	r6,a
 	clr	a
 	mov	r7,a
@@ -869,7 +963,7 @@ _IAP_ReadWord:
 	mov	a,r4
 	orl	a,r6
 	mov	dph,a
-;	iap_flash.c:57: }
+;	iap_flash.c:107: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'IAP_CalculateCRC16'
@@ -878,33 +972,33 @@ _IAP_ReadWord:
 ;start_addr    Allocated to registers r6 r7 
 ;crc           Allocated to registers r4 r5 
 ;ptr           Allocated to registers 
-;i             Allocated with name '_IAP_CalculateCRC16_i_20000_21'
+;i             Allocated with name '_IAP_CalculateCRC16_i_20000_28'
 ;byte          Allocated to registers 
 ;b             Allocated to registers r1 
 ;------------------------------------------------------------
-;	iap_flash.c:59: uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length) {
+;	iap_flash.c:109: uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length) {
 ;	-----------------------------------------
 ;	 function IAP_CalculateCRC16
 ;	-----------------------------------------
 _IAP_CalculateCRC16:
 	mov	r6, dpl
 	mov	r7, dph
-;	iap_flash.c:60: uint16_t crc = 0xFFFF;
+;	iap_flash.c:110: uint16_t crc = 0xFFFF;
 	mov	r4,#0xff
 	mov	r5,#0xff
-;	iap_flash.c:61: __code const uint8_t *ptr = (__code const uint8_t *)start_addr;
-;	iap_flash.c:63: for (uint16_t i = 0; i < length; i++) {
+;	iap_flash.c:111: __code const uint8_t *ptr = (__code const uint8_t *)start_addr;
+;	iap_flash.c:113: for (uint16_t i = 0; i < length; i++) {
 	clr	a
-	mov	_IAP_CalculateCRC16_i_20000_21,a
-	mov	(_IAP_CalculateCRC16_i_20000_21 + 1),a
+	mov	_IAP_CalculateCRC16_i_20000_28,a
+	mov	(_IAP_CalculateCRC16_i_20000_28 + 1),a
 00110$:
 	clr	c
-	mov	a,_IAP_CalculateCRC16_i_20000_21
+	mov	a,_IAP_CalculateCRC16_i_20000_28
 	subb	a,_IAP_CalculateCRC16_PARM_2
-	mov	a,(_IAP_CalculateCRC16_i_20000_21 + 1)
+	mov	a,(_IAP_CalculateCRC16_i_20000_28 + 1)
 	subb	a,(_IAP_CalculateCRC16_PARM_2 + 1)
 	jnc	00105$
-;	iap_flash.c:64: uint8_t byte = *ptr++;
+;	iap_flash.c:114: uint8_t byte = *ptr++;
 	mov	dpl,r6
 	mov	dph,r7
 	clr	a
@@ -913,23 +1007,23 @@ _IAP_CalculateCRC16:
 	inc	dptr
 	mov	r6,dpl
 	mov	r7,dph
-;	iap_flash.c:65: crc ^= ((uint16_t)byte << 8);
+;	iap_flash.c:115: crc ^= ((uint16_t)byte << 8);
 	mov	ar0,r1
 	mov	ar1,r0
 	clr	a
 	xrl	ar4,a
 	mov	a,r1
 	xrl	ar5,a
-;	iap_flash.c:66: for (uint8_t b = 0; b < 8; b++) {
+;	iap_flash.c:116: for (uint8_t b = 0; b < 8; b++) {
 	mov	r1,#0x00
 00107$:
 	cjne	r1,#0x08,00152$
 00152$:
 	jnc	00111$
-;	iap_flash.c:67: if (crc & 0x8000) {
+;	iap_flash.c:117: if (crc & 0x8000) {
 	mov	a,r5
 	jnb	acc.7,00102$
-;	iap_flash.c:68: crc = (crc << 1) ^ 0x1021;
+;	iap_flash.c:118: crc = (crc << 1) ^ 0x1021;
 	mov	a,r4
 	add	a,r4
 	mov	r0,a
@@ -942,7 +1036,7 @@ _IAP_CalculateCRC16:
 	mov	ar5,r3
 	sjmp	00108$
 00102$:
-;	iap_flash.c:70: crc <<= 1;
+;	iap_flash.c:120: crc <<= 1;
 	mov	a,r4
 	add	a,r4
 	mov	r4,a
@@ -950,21 +1044,21 @@ _IAP_CalculateCRC16:
 	rlc	a
 	mov	r5,a
 00108$:
-;	iap_flash.c:66: for (uint8_t b = 0; b < 8; b++) {
+;	iap_flash.c:116: for (uint8_t b = 0; b < 8; b++) {
 	inc	r1
 	sjmp	00107$
 00111$:
-;	iap_flash.c:63: for (uint16_t i = 0; i < length; i++) {
-	inc	_IAP_CalculateCRC16_i_20000_21
+;	iap_flash.c:113: for (uint16_t i = 0; i < length; i++) {
+	inc	_IAP_CalculateCRC16_i_20000_28
 	clr	a
-	cjne	a,_IAP_CalculateCRC16_i_20000_21,00110$
-	inc	(_IAP_CalculateCRC16_i_20000_21 + 1)
+	cjne	a,_IAP_CalculateCRC16_i_20000_28,00110$
+	inc	(_IAP_CalculateCRC16_i_20000_28 + 1)
 	sjmp	00110$
 00105$:
-;	iap_flash.c:74: return crc;
+;	iap_flash.c:124: return crc;
 	mov	dpl, r4
 	mov	dph, r5
-;	iap_flash.c:75: }
+;	iap_flash.c:125: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'USB_Init'
@@ -1546,14 +1640,14 @@ _USB_Shutdown:
 ;ms            Allocated to registers 
 ;i             Allocated to registers r4 r5 
 ;------------------------------------------------------------
-;	bootloader.c:30: static void DelayMs(uint16_t ms) {
+;	bootloader.c:31: static void DelayMs(uint16_t ms) {
 ;	-----------------------------------------
 ;	 function DelayMs
 ;	-----------------------------------------
 _DelayMs:
 	mov	r6, dpl
 	mov	r7, dph
-;	bootloader.c:31: while (ms--) {
+;	bootloader.c:32: while (ms--) {
 00102$:
 	mov	ar4,r6
 	mov	ar5,r7
@@ -1564,7 +1658,7 @@ _DelayMs:
 	mov	a,r4
 	orl	a,r5
 	jz	00108$
-;	bootloader.c:32: for (uint16_t i = 0; i < 2400; i++) {
+;	bootloader.c:33: for (uint16_t i = 0; i < 2400; i++) {
 	mov	r4,#0x00
 	mov	r5,#0x00
 00106$:
@@ -1576,43 +1670,46 @@ _DelayMs:
 	mov	a,r3
 	subb	a,#0x09
 	jnc	00102$
-;	bootloader.c:33: __asm nop __endasm;
+;	bootloader.c:34: __asm nop __endasm;
 	nop	
-;	bootloader.c:32: for (uint16_t i = 0; i < 2400; i++) {
+;	bootloader.c:33: for (uint16_t i = 0; i < 2400; i++) {
 	inc	r4
 	cjne	r4,#0x00,00106$
 	inc	r5
 	sjmp	00106$
 00108$:
-;	bootloader.c:36: }
+;	bootloader.c:37: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'JumpToApp'
 ;------------------------------------------------------------
-;	bootloader.c:38: static void JumpToApp(void) {
+;	bootloader.c:39: static void JumpToApp(void) {
 ;	-----------------------------------------
 ;	 function JumpToApp
 ;	-----------------------------------------
 _JumpToApp:
-;	bootloader.c:39: USB_Shutdown();
+;	bootloader.c:40: USB_Shutdown();
 	lcall	_USB_Shutdown
-;	bootloader.c:40: DelayMs(10);
+;	bootloader.c:41: DelayMs(10);
 	mov	dptr,#0x000a
 	lcall	_DelayMs
-;	bootloader.c:44: __endasm;
+;	bootloader.c:45: __endasm;
 	ljmp 0x0000
-;	bootloader.c:45: }
+;	bootloader.c:46: }
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'ProcessPacket'
 ;------------------------------------------------------------
-;rx            Allocated with name '_ProcessPacket_rx_10000_119'
-;cmd           Allocated with name '_ProcessPacket_cmd_10000_119'
-;seq           Allocated with name '_ProcessPacket_seq_10000_119'
-;addr          Allocated with name '_ProcessPacket_addr_10000_119'
-;len           Allocated with name '_ProcessPacket_len_10000_119'
-;err           Allocated with name '_ProcessPacket_err_40000_129'
-;i             Allocated with name '_ProcessPacket_i_50000_130'
+;rx            Allocated with name '_ProcessPacket_rx_10000_126'
+;cmd           Allocated with name '_ProcessPacket_cmd_10000_126'
+;seq           Allocated with name '_ProcessPacket_seq_10000_126'
+;addr          Allocated with name '_ProcessPacket_addr_10000_126'
+;len           Allocated with name '_ProcessPacket_len_10000_126'
+;erase_err     Allocated with name '_ProcessPacket_erase_err_40000_136'
+;page          Allocated to registers r0 r2 
+;end_page      Allocated with name '_ProcessPacket_end_page_40000_136'
+;err           Allocated with name '_ProcessPacket_err_40000_144'
+;i             Allocated with name '_ProcessPacket_i_50000_145'
 ;word          Allocated to registers 
 ;expected_crc  Allocated to registers r4 r7 
 ;calc_crc      Allocated to registers r5 r6 
@@ -1620,52 +1717,52 @@ _JumpToApp:
 ;sloc1         Allocated with name '_ProcessPacket_sloc1_1_0'
 ;sloc2         Allocated with name '_ProcessPacket_sloc2_1_0'
 ;------------------------------------------------------------
-;	bootloader.c:47: static void ProcessPacket(void) {
+;	bootloader.c:48: static void ProcessPacket(void) {
 ;	-----------------------------------------
 ;	 function ProcessPacket
 ;	-----------------------------------------
 _ProcessPacket:
-;	bootloader.c:48: uint8_t *rx = USB_GetRxBuffer();
+;	bootloader.c:49: uint8_t *rx = USB_GetRxBuffer();
 	lcall	_USB_GetRxBuffer
-;	bootloader.c:49: uint8_t cmd = rx[0];
-	mov	_ProcessPacket_rx_10000_119,dpl
-	mov	(_ProcessPacket_rx_10000_119 + 1),dph
-	mov	(_ProcessPacket_rx_10000_119 + 2),b
+;	bootloader.c:50: uint8_t cmd = rx[0];
+	mov	_ProcessPacket_rx_10000_126,dpl
+	mov	(_ProcessPacket_rx_10000_126 + 1),dph
+	mov	(_ProcessPacket_rx_10000_126 + 2),b
 	lcall	__gptrget
-	mov	_ProcessPacket_cmd_10000_119,a
-;	bootloader.c:50: uint8_t seq = rx[1];
+	mov	_ProcessPacket_cmd_10000_126,a
+;	bootloader.c:51: uint8_t seq = rx[1];
 	mov	a,#0x01
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r1,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r2,a
-	mov	r3,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r3,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r1
 	mov	dph,r2
 	mov	b,r3
 	lcall	__gptrget
-	mov	_ProcessPacket_seq_10000_119,a
-;	bootloader.c:51: uint16_t addr = rx[2] | ((uint16_t)rx[3] << 8);
+	mov	_ProcessPacket_seq_10000_126,a
+;	bootloader.c:52: uint16_t addr = rx[2] | ((uint16_t)rx[3] << 8);
 	mov	a,#0x02
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r0,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r2,a
-	mov	r3,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r3,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r0
 	mov	dph,r2
 	mov	b,r3
 	lcall	__gptrget
 	mov	_ProcessPacket_sloc0_1_0,a
 	mov	a,#0x03
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	_ProcessPacket_sloc2_1_0,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	(_ProcessPacket_sloc2_1_0 + 1),a
-	mov	(_ProcessPacket_sloc2_1_0 + 2),(_ProcessPacket_rx_10000_119 + 2)
+	mov	(_ProcessPacket_sloc2_1_0 + 2),(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,_ProcessPacket_sloc2_1_0
 	mov	dph,(_ProcessPacket_sloc2_1_0 + 1)
 	mov	b,(_ProcessPacket_sloc2_1_0 + 2)
@@ -1675,24 +1772,24 @@ _ProcessPacket:
 	mov	(_ProcessPacket_sloc1_1_0 + 1),r1
 	mov	_ProcessPacket_sloc1_1_0,r5
 	mov	r1,_ProcessPacket_sloc0_1_0
-	mov	_ProcessPacket_addr_10000_119,r1
+	mov	_ProcessPacket_addr_10000_126,r1
 	mov	a,(_ProcessPacket_sloc1_1_0 + 1)
 	orl	a,r5
-	mov	(_ProcessPacket_addr_10000_119 + 1),a
-;	bootloader.c:52: uint8_t len = rx[4];
+	mov	(_ProcessPacket_addr_10000_126 + 1),a
+;	bootloader.c:53: uint8_t len = rx[4];
 	mov	a,#0x04
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r1,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r5,a
-	mov	r7,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r7,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r1
 	mov	dph,r5
 	mov	b,r7
 	lcall	__gptrget
-	mov	_ProcessPacket_len_10000_119,a
-;	bootloader.c:54: memset(reply_buf, 0, 64);
+	mov	_ProcessPacket_len_10000_126,a
+;	bootloader.c:55: memset(reply_buf, 0, 64);
 	mov	_memset_PARM_2,#0x00
 	mov	_memset_PARM_3,#0x40
 	mov	(_memset_PARM_3 + 1),#0x00
@@ -1705,15 +1802,15 @@ _ProcessPacket:
 	pop	ar0
 	pop	ar2
 	pop	ar3
-;	bootloader.c:55: reply_buf[0] = cmd;
+;	bootloader.c:56: reply_buf[0] = cmd;
 	mov	dptr,#_reply_buf
-	mov	a,_ProcessPacket_cmd_10000_119
+	mov	a,_ProcessPacket_cmd_10000_126
 	movx	@dptr,a
-;	bootloader.c:56: reply_buf[1] = seq;
+;	bootloader.c:57: reply_buf[1] = seq;
 	mov	dptr,#(_reply_buf + 0x0001)
-	mov	a,_ProcessPacket_seq_10000_119
+	mov	a,_ProcessPacket_seq_10000_126
 	movx	@dptr,a
-;	bootloader.c:57: reply_buf[2] = rx[2];
+;	bootloader.c:58: reply_buf[2] = rx[2];
 	mov	dpl,r0
 	mov	dph,r2
 	mov	b,r3
@@ -1721,7 +1818,7 @@ _ProcessPacket:
 	mov	r0,a
 	mov	dptr,#(_reply_buf + 0x0002)
 	movx	@dptr,a
-;	bootloader.c:58: reply_buf[3] = rx[3];
+;	bootloader.c:59: reply_buf[3] = rx[3];
 	mov	dpl,_ProcessPacket_sloc2_1_0
 	mov	dph,(_ProcessPacket_sloc2_1_0 + 1)
 	mov	b,(_ProcessPacket_sloc2_1_0 + 2)
@@ -1729,64 +1826,64 @@ _ProcessPacket:
 	mov	r6,a
 	mov	dptr,#(_reply_buf + 0x0003)
 	movx	@dptr,a
-;	bootloader.c:59: reply_buf[59] = STATUS_OK;
+;	bootloader.c:60: reply_buf[59] = STATUS_OK;
 	mov	dptr,#(_reply_buf + 0x003b)
 	clr	a
 	movx	@dptr,a
-;	bootloader.c:61: switch (cmd) {
-	mov	a,_ProcessPacket_cmd_10000_119
+;	bootloader.c:62: switch (cmd) {
+	mov	a,_ProcessPacket_cmd_10000_126
 	add	a,#0xff - 0x06
-	jnc	00214$
-	ljmp	00119$
-00214$:
+	jnc	00259$
+	ljmp	00129$
+00259$:
 ;	free result
-	mov	a,_ProcessPacket_cmd_10000_119
+	mov	a,_ProcessPacket_cmd_10000_126
 	mov	b,#0x03
 	mul	ab
-	mov	dptr,#00215$
+	mov	dptr,#00260$
 	jmp	@a+dptr
-00215$:
-	ljmp	00119$
+00260$:
+	ljmp	00129$
 	ljmp	00101$
 	ljmp	00102$
-	ljmp	00119$
+	ljmp	00129$
 	ljmp	00109$
-	ljmp	00117$
-	ljmp	00118$
-;	bootloader.c:62: case CMD_HELLO:
+	ljmp	00127$
+	ljmp	00128$
+;	bootloader.c:63: case CMD_HELLO:
 00101$:
-;	bootloader.c:63: reply_buf[4] = 0x52; // Chip ID: CH552
+;	bootloader.c:64: reply_buf[4] = 0x52; // Chip ID: CH552
 	mov	dptr,#(_reply_buf + 0x0004)
 	mov	a,#0x52
 	movx	@dptr,a
-;	bootloader.c:64: reply_buf[5] = 0x01; // Bootloader v1.0
+;	bootloader.c:65: reply_buf[5] = 0x01; // Bootloader v1.0
 	mov	dptr,#(_reply_buf + 0x0005)
 	mov	a,#0x01
 	movx	@dptr,a
-;	bootloader.c:65: reply_buf[6] = (uint8_t)(USER_FLASH_END & 0xFF);
+;	bootloader.c:66: reply_buf[6] = (uint8_t)(USER_FLASH_END & 0xFF);
 	mov	dptr,#(_reply_buf + 0x0006)
 	mov	a,#0xff
 	movx	@dptr,a
-;	bootloader.c:66: reply_buf[7] = (uint8_t)((USER_FLASH_END >> 8) & 0xFF); // 11 KB usable
+;	bootloader.c:67: reply_buf[7] = (uint8_t)((USER_FLASH_END >> 8) & 0xFF); // 11 KB usable
 	mov	dptr,#(_reply_buf + 0x0007)
 	mov	a,#0x2b
 	movx	@dptr,a
-;	bootloader.c:67: reply_buf[59] = STATUS_OK;
+;	bootloader.c:68: reply_buf[59] = STATUS_OK;
 	mov	dptr,#(_reply_buf + 0x003b)
 	clr	a
 	movx	@dptr,a
-;	bootloader.c:68: break;
-	ljmp	00120$
-;	bootloader.c:70: case CMD_UNLOCK:
+;	bootloader.c:69: break;
+	ljmp	00130$
+;	bootloader.c:71: case CMD_UNLOCK:
 00102$:
-;	bootloader.c:71: if (rx[5] == 0x5A && rx[6] == 0xC3 && rx[7] == 0x3C && rx[8] == 0xA5) {
+;	bootloader.c:72: if (rx[5] == 0x5A && rx[6] == 0xC3 && rx[7] == 0x3C && rx[8] == 0xA5) {
 	mov	a,#0x05
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r4,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r5,a
-	mov	r6,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r6,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r4
 	mov	dph,r5
 	mov	b,r6
@@ -1794,12 +1891,12 @@ _ProcessPacket:
 	mov	r4,a
 	cjne	r4,#0x5a,00104$
 	mov	a,#0x06
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r4,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r5,a
-	mov	r6,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r6,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r4
 	mov	dph,r5
 	mov	b,r6
@@ -1807,12 +1904,12 @@ _ProcessPacket:
 	mov	r4,a
 	cjne	r4,#0xc3,00104$
 	mov	a,#0x07
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r4,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r5,a
-	mov	r6,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r6,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r4
 	mov	dph,r5
 	mov	b,r6
@@ -1820,82 +1917,175 @@ _ProcessPacket:
 	mov	r4,a
 	cjne	r4,#0x3c,00104$
 	mov	a,#0x08
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r4,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r5,a
-	mov	r6,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r6,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r4
 	mov	dph,r5
 	mov	b,r6
 	lcall	__gptrget
 	mov	r4,a
 	cjne	r4,#0xa5,00104$
-;	bootloader.c:72: is_unlocked = 1;
+;	bootloader.c:73: is_unlocked = 1;
 	mov	_is_unlocked,#0x01
-;	bootloader.c:73: reply_buf[59] = STATUS_OK;
+;	bootloader.c:74: last_erased_page = 0xFFFF; // Reset page erase tracking for new session
+	mov	_last_erased_page,#0xff
+	mov	(_last_erased_page + 1),#0xff
+;	bootloader.c:75: reply_buf[59] = STATUS_OK;
 	mov	dptr,#(_reply_buf + 0x003b)
 	clr	a
 	movx	@dptr,a
-	ljmp	00120$
+	ljmp	00130$
 00104$:
-;	bootloader.c:75: is_unlocked = 0;
+;	bootloader.c:77: is_unlocked = 0;
 	mov	_is_unlocked,#0x00
-;	bootloader.c:76: reply_buf[59] = STATUS_LOCKED;
+;	bootloader.c:78: reply_buf[59] = STATUS_LOCKED;
 	mov	dptr,#(_reply_buf + 0x003b)
 	mov	a,#0x02
 	movx	@dptr,a
-;	bootloader.c:78: break;
-	ljmp	00120$
-;	bootloader.c:80: case CMD_WRITE_BLOCK:
+;	bootloader.c:80: break;
+	ljmp	00130$
+;	bootloader.c:82: case CMD_WRITE_BLOCK:
 00109$:
-;	bootloader.c:81: if (!is_unlocked) {
+;	bootloader.c:83: if (!is_unlocked) {
 	mov	a,_is_unlocked
 	jnz	00111$
-;	bootloader.c:82: reply_buf[59] = STATUS_LOCKED;
+;	bootloader.c:84: reply_buf[59] = STATUS_LOCKED;
 	mov	dptr,#(_reply_buf + 0x003b)
 	mov	a,#0x02
 	movx	@dptr,a
-;	bootloader.c:83: break;
-	ljmp	00120$
+;	bootloader.c:85: break;
+	ljmp	00130$
 00111$:
-;	bootloader.c:86: if (addr + len > BOOTLOADER_START) {
-	mov	r5,_ProcessPacket_len_10000_119
+;	bootloader.c:88: if (addr + len > BOOTLOADER_START) {
+	mov	r5,_ProcessPacket_len_10000_126
 	mov	r6,#0x00
-	mov	r1,_ProcessPacket_addr_10000_119
-	mov	r4,(_ProcessPacket_addr_10000_119 + 1)
+	mov	r1,_ProcessPacket_addr_10000_126
+	mov	r4,(_ProcessPacket_addr_10000_126 + 1)
+	mov	a,r5
+	add	a, r1
+	mov	r2,a
+	mov	a,r6
+	addc	a, r4
+	mov	r3,a
+	clr	c
+	clr	a
+	subb	a,r2
+	mov	a,#0x2c
+	subb	a,r3
+	jnc	00113$
+;	free result
+;	bootloader.c:89: reply_buf[59] = STATUS_OOB; // Protect bootloader
+	mov	dptr,#(_reply_buf + 0x003b)
+	mov	a,#0x03
+	movx	@dptr,a
+;	bootloader.c:90: break;
+	ljmp	00130$
+00113$:
+;	bootloader.c:95: uint8_t erase_err = 0;
+;	bootloader.c:96: uint16_t page = addr & ~0x03FF;
+	clr	a
+	mov	_ProcessPacket_erase_err_40000_136,a
+	mov	r0,a
+	mov	a,#0xfc
+	anl	a,r4
+	mov	r2,a
+;	bootloader.c:97: uint16_t end_page = (addr + len - 1) & ~0x03FF;
 	mov	a,r5
 	add	a, r1
 	mov	r5,a
 	mov	a,r6
 	addc	a, r4
 	mov	r6,a
+	dec	r5
+	cjne	r5,#0xff,00271$
+	dec	r6
+00271$:
+	mov	r5,#0x00
+	anl	ar6,#0xfc
+	mov	_ProcessPacket_end_page_40000_136,r5
+	mov	(_ProcessPacket_end_page_40000_136 + 1),r6
+;	bootloader.c:98: while (page <= end_page) {
+00119$:
 	clr	c
-	clr	a
-	subb	a,r5
-	mov	a,#0x2c
-	subb	a,r6
-	jnc	00113$
+	mov	a,_ProcessPacket_end_page_40000_136
+	subb	a,r0
+	mov	a,(_ProcessPacket_end_page_40000_136 + 1)
+	subb	a,r2
+	jc	00121$
 ;	free result
-;	bootloader.c:87: reply_buf[59] = STATUS_OOB; // Protect bootloader
-	mov	dptr,#(_reply_buf + 0x003b)
-	mov	a,#0x03
-	movx	@dptr,a
-;	bootloader.c:88: break;
-	ljmp	00120$
-00113$:
-;	bootloader.c:93: uint8_t err = 0;
-	mov	_ProcessPacket_err_40000_129,#0x00
-;	bootloader.c:94: for (uint8_t i = 0; i < len; i += 2) {
-	mov	_ProcessPacket_i_50000_130,#0x00
-00122$:
+;	bootloader.c:99: if (last_erased_page == 0xFFFF || page > last_erased_page) {
+	mov	r3,_last_erased_page
+	mov	r6,(_last_erased_page + 1)
+	cjne	r3,#0xff,00273$
+	cjne	r6,#0xff,00273$
+	sjmp	00116$
+00273$:
 	clr	c
-	mov	a,_ProcessPacket_i_50000_130
-	subb	a,_ProcessPacket_len_10000_119
-	jnc	00116$
-;	bootloader.c:95: uint16_t word = rx[5 + i] | ((uint16_t)rx[6 + i] << 8);
-	mov	r2,_ProcessPacket_i_50000_130
+	mov	a,_last_erased_page
+	subb	a,r0
+	mov	a,(_last_erased_page + 1)
+	subb	a,r2
+	jnc	00117$
+;	free result
+00116$:
+;	bootloader.c:100: if (IAP_ErasePage(page) != 0) {
+	mov	dpl, r0
+	mov	dph, r2
+	push	ar4
+	push	ar2
+	push	ar1
+	push	ar0
+	lcall	_IAP_ErasePage
+	mov	a, dpl
+	pop	ar0
+	pop	ar1
+	pop	ar2
+	pop	ar4
+	jz	00115$
+;	bootloader.c:101: erase_err = 1;
+	mov	_ProcessPacket_erase_err_40000_136,#0x01
+;	bootloader.c:102: break;
+	sjmp	00121$
+00115$:
+;	bootloader.c:104: last_erased_page = page;
+	mov	_last_erased_page,r0
+	mov	(_last_erased_page + 1),r2
+00117$:
+;	bootloader.c:106: page += 0x0400;
+	mov	ar5,r0
+	mov	ar6,r2
+	mov	a,#0x04
+	add	a, r6
+	mov	r6,a
+	mov	ar0,r5
+	mov	ar2,r6
+	sjmp	00119$
+00121$:
+;	bootloader.c:108: if (erase_err) {
+	mov	a,_ProcessPacket_erase_err_40000_136
+	jz	00123$
+;	bootloader.c:109: reply_buf[59] = STATUS_WRITE_ERR;
+	mov	dptr,#(_reply_buf + 0x003b)
+	mov	a,#0x04
+	movx	@dptr,a
+;	bootloader.c:110: break;
+	ljmp	00130$
+00123$:
+;	bootloader.c:116: uint8_t err = 0;
+	mov	_ProcessPacket_err_40000_144,#0x00
+;	bootloader.c:117: for (uint8_t i = 0; i < len; i += 2) {
+	mov	_ProcessPacket_i_50000_145,#0x00
+00132$:
+	clr	c
+	mov	a,_ProcessPacket_i_50000_145
+	subb	a,_ProcessPacket_len_10000_126
+	jnc	00126$
+;	bootloader.c:118: uint16_t word = rx[5 + i] | ((uint16_t)rx[6 + i] << 8);
+	mov	r2,_ProcessPacket_i_50000_145
 	mov	r3,#0x00
 	mov	a,#0x05
 	add	a, r2
@@ -1904,12 +2094,12 @@ _ProcessPacket:
 	addc	a, r3
 	mov	r6,a
 	mov	a,r0
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r0,a
 	mov	a,r6
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r6,a
-	mov	r7,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r7,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r0
 	mov	dph,r6
 	mov	b,r7
@@ -1922,12 +2112,12 @@ _ProcessPacket:
 	addc	a, r3
 	mov	r7,a
 	mov	a,r6
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r6,a
 	mov	a,r7
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r5,a
-	mov	r7,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r7,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r6
 	mov	dph,r5
 	mov	b,r7
@@ -1940,7 +2130,7 @@ _ProcessPacket:
 	mov	a,r7
 	orl	a,r5
 	mov	(_IAP_WriteWord_PARM_2 + 1),a
-;	bootloader.c:96: if (IAP_WriteWord(addr + i, word) != 0) {
+;	bootloader.c:119: if (IAP_WriteWord(addr + i, word) != 0) {
 	mov	a,r2
 	add	a, r1
 	mov	r2,a
@@ -1955,50 +2145,50 @@ _ProcessPacket:
 	mov	a, dpl
 	pop	ar1
 	pop	ar4
-	jz	00123$
-;	bootloader.c:97: err = 1;
-	mov	_ProcessPacket_err_40000_129,#0x01
-;	bootloader.c:98: break;
-	sjmp	00116$
-00123$:
-;	bootloader.c:94: for (uint8_t i = 0; i < len; i += 2) {
-	mov	r5,_ProcessPacket_i_50000_130
+	jz	00133$
+;	bootloader.c:120: err = 1;
+	mov	_ProcessPacket_err_40000_144,#0x01
+;	bootloader.c:121: break;
+	sjmp	00126$
+00133$:
+;	bootloader.c:117: for (uint8_t i = 0; i < len; i += 2) {
+	mov	r5,_ProcessPacket_i_50000_145
 	mov	a,#0x02
 	add	a, r5
-	mov	_ProcessPacket_i_50000_130,a
-	sjmp	00122$
-00116$:
-;	bootloader.c:101: reply_buf[59] = err ? STATUS_WRITE_ERR : STATUS_OK;
-	mov	a,_ProcessPacket_err_40000_129
-	jz	00126$
-	mov	a,#0x04
+	mov	_ProcessPacket_i_50000_145,a
+	sjmp	00132$
 00126$:
+;	bootloader.c:124: reply_buf[59] = err ? STATUS_WRITE_ERR : STATUS_OK;
+	mov	a,_ProcessPacket_err_40000_144
+	jz	00136$
+	mov	a,#0x04
+00136$:
 	mov	dptr,#(_reply_buf + 0x003b)
 	movx	@dptr,a
-;	bootloader.c:103: break;
-	ljmp	00120$
-;	bootloader.c:105: case CMD_VERIFY_CRC:
-00117$:
-;	bootloader.c:107: uint16_t expected_crc = rx[5] | ((uint16_t)rx[6] << 8);
+;	bootloader.c:126: break;
+	ljmp	00130$
+;	bootloader.c:128: case CMD_VERIFY_CRC:
+00127$:
+;	bootloader.c:130: uint16_t expected_crc = rx[5] | ((uint16_t)rx[6] << 8);
 	mov	a,#0x05
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r5,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r6,a
-	mov	r7,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r7,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r5
 	mov	dph,r6
 	mov	b,r7
 	lcall	__gptrget
 	mov	r5,a
 	mov	a,#0x06
-	add	a, _ProcessPacket_rx_10000_119
+	add	a, _ProcessPacket_rx_10000_126
 	mov	r4,a
 	clr	a
-	addc	a, (_ProcessPacket_rx_10000_119 + 1)
+	addc	a, (_ProcessPacket_rx_10000_126 + 1)
 	mov	r6,a
-	mov	r7,(_ProcessPacket_rx_10000_119 + 2)
+	mov	r7,(_ProcessPacket_rx_10000_126 + 2)
 	mov	dpl,r4
 	mov	dph,r6
 	mov	b,r7
@@ -2011,9 +2201,9 @@ _ProcessPacket:
 	orl	ar4,a
 	mov	a,r6
 	orl	ar7,a
-;	bootloader.c:108: uint16_t calc_crc = IAP_CalculateCRC16(0x0000, addr);
-	mov	_IAP_CalculateCRC16_PARM_2,_ProcessPacket_addr_10000_119
-	mov	(_IAP_CalculateCRC16_PARM_2 + 1),(_ProcessPacket_addr_10000_119 + 1)
+;	bootloader.c:131: uint16_t calc_crc = IAP_CalculateCRC16(0x0000, addr);
+	mov	_IAP_CalculateCRC16_PARM_2,_ProcessPacket_addr_10000_126
+	mov	(_IAP_CalculateCRC16_PARM_2 + 1),(_ProcessPacket_addr_10000_126 + 1)
 	mov	dptr,#0x0000
 	push	ar7
 	push	ar4
@@ -2022,63 +2212,63 @@ _ProcessPacket:
 	mov	r6, dph
 	pop	ar4
 	pop	ar7
-;	bootloader.c:109: reply_buf[4] = (uint8_t)(calc_crc & 0xFF);
+;	bootloader.c:132: reply_buf[4] = (uint8_t)(calc_crc & 0xFF);
 	mov	ar3,r5
 	mov	dptr,#(_reply_buf + 0x0004)
 	mov	a,r3
 	movx	@dptr,a
-;	bootloader.c:110: reply_buf[5] = (uint8_t)((calc_crc >> 8) & 0xFF);
+;	bootloader.c:133: reply_buf[5] = (uint8_t)((calc_crc >> 8) & 0xFF);
 	mov	ar3,r6
 	mov	dptr,#(_reply_buf + 0x0005)
 	mov	a,r3
 	movx	@dptr,a
-;	bootloader.c:111: reply_buf[59] = (calc_crc == expected_crc) ? STATUS_OK : STATUS_BAD_CRC;
+;	bootloader.c:134: reply_buf[59] = (calc_crc == expected_crc) ? STATUS_OK : STATUS_BAD_CRC;
 	mov	a,r5
-	cjne	a,ar4,00128$
+	cjne	a,ar4,00138$
 	mov	a,r6
-	cjne	a,ar7,00128$
+	cjne	a,ar7,00138$
 	mov	r7,#0x00
-	sjmp	00129$
-00128$:
+	sjmp	00139$
+00138$:
 	mov	r7,#0x01
-00129$:
+00139$:
 	mov	dptr,#(_reply_buf + 0x003b)
 	mov	a,r7
 	movx	@dptr,a
-;	bootloader.c:113: break;
-;	bootloader.c:115: case CMD_REBOOT:
-	sjmp	00120$
-00118$:
-;	bootloader.c:116: reply_buf[59] = STATUS_OK;
+;	bootloader.c:136: break;
+;	bootloader.c:138: case CMD_REBOOT:
+	sjmp	00130$
+00128$:
+;	bootloader.c:139: reply_buf[59] = STATUS_OK;
 	mov	dptr,#(_reply_buf + 0x003b)
 	clr	a
 	movx	@dptr,a
-;	bootloader.c:117: USB_SendReport(reply_buf, 64);
+;	bootloader.c:140: USB_SendReport(reply_buf, 64);
 	mov	_USB_SendReport_PARM_2,#0x40
 	mov	dptr,#_reply_buf
 	mov	b,a
 	lcall	_USB_SendReport
-;	bootloader.c:118: DelayMs(50);
+;	bootloader.c:141: DelayMs(50);
 	mov	dptr,#0x0032
 	lcall	_DelayMs
-;	bootloader.c:119: JumpToApp();
-;	bootloader.c:120: return;
-;	bootloader.c:122: default:
+;	bootloader.c:142: JumpToApp();
+;	bootloader.c:143: return;
+;	bootloader.c:145: default:
 	ljmp	_JumpToApp
-00119$:
-;	bootloader.c:123: reply_buf[59] = STATUS_UNKNOWN;
+00129$:
+;	bootloader.c:146: reply_buf[59] = STATUS_UNKNOWN;
 	mov	dptr,#(_reply_buf + 0x003b)
 	mov	a,#0xff
 	movx	@dptr,a
-;	bootloader.c:125: }
-00120$:
-;	bootloader.c:127: USB_SendReport(reply_buf, 64);
+;	bootloader.c:148: }
+00130$:
+;	bootloader.c:150: USB_SendReport(reply_buf, 64);
 	mov	_USB_SendReport_PARM_2,#0x40
 	mov	dptr,#_reply_buf
 	mov	b, #0x00
 	lcall	_USB_SendReport
-;	bootloader.c:128: USB_ReleaseRx();
-;	bootloader.c:129: }
+;	bootloader.c:151: USB_ReleaseRx();
+;	bootloader.c:152: }
 	ljmp	_USB_ReleaseRx
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'main'
@@ -2090,26 +2280,26 @@ _ProcessPacket:
 ;timeout       Allocated to registers 
 ;stay_in_bootloader Allocated to registers r7 
 ;------------------------------------------------------------
-;	bootloader.c:131: void main(void) {
+;	bootloader.c:154: void main(void) {
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-;	bootloader.c:133: P3_MOD_OC &= ~(1 << BOOT_PIN_BIT); // Quasi-bidirectional / pull-up mode
+;	bootloader.c:156: P3_MOD_OC &= ~(1 << BOOT_PIN_BIT); // Quasi-bidirectional / pull-up mode
 	anl	_P3_MOD_OC,#0xfb
-;	bootloader.c:134: P3_DIR_PU |=  (1 << BOOT_PIN_BIT); // Enable pullup
+;	bootloader.c:157: P3_DIR_PU |=  (1 << BOOT_PIN_BIT); // Enable pullup
 	orl	_P3_DIR_PU,#0x04
-;	bootloader.c:135: P3_2 = 1; // High impedance input read
+;	bootloader.c:158: P3_2 = 1; // High impedance input read
 ;	assignBit
 	setb	_P3_2
-;	bootloader.c:138: P1_MOD_OC &= ~(1 << 5);
+;	bootloader.c:161: P1_MOD_OC &= ~(1 << 5);
 	anl	_P1_MOD_OC,#0xdf
-;	bootloader.c:139: P1_DIR_PU |=  (1 << 5);
+;	bootloader.c:162: P1_DIR_PU |=  (1 << 5);
 	orl	_P1_DIR_PU,#0x20
-;	bootloader.c:140: P1_5 = 1;
+;	bootloader.c:163: P1_5 = 1;
 ;	assignBit
 	setb	_P1_5
-;	bootloader.c:143: uint8_t button_pressed = (P3_2 == 0) || (P1_5 == 0);
+;	bootloader.c:166: uint8_t button_pressed = (P3_2 == 0) || (P1_5 == 0);
 	jnb	_P3_2,00113$
 	jnb	_P1_5,00113$
 ;	assignBit
@@ -2123,13 +2313,13 @@ _main:
 	clr	a
 	rlc	a
 	mov	r7,a
-;	bootloader.c:146: uint16_t first_word = IAP_ReadWord(0x0000);
+;	bootloader.c:169: uint16_t first_word = IAP_ReadWord(0x0000);
 	mov	dptr,#0x0000
 	push	ar7
 	lcall	_IAP_ReadWord
 	mov	r5, dpl
 	mov	r6, dph
-;	bootloader.c:147: uint16_t vec_word   = IAP_ReadWord(0x0008);
+;	bootloader.c:170: uint16_t vec_word   = IAP_ReadWord(0x0008);
 	mov	dptr,#0x0008
 	push	ar6
 	push	ar5
@@ -2139,7 +2329,7 @@ _main:
 	pop	ar5
 	pop	ar6
 	pop	ar7
-;	bootloader.c:148: uint8_t is_blank = (first_word == 0xFFFF) || (vec_word == 0xFFFF);
+;	bootloader.c:171: uint8_t is_blank = (first_word == 0xFFFF) || (vec_word == 0xFFFF);
 	cjne	r5,#0xff,00193$
 	cjne	r6,#0xff,00193$
 	sjmp	00116$
@@ -2159,13 +2349,13 @@ _main:
 	clr	a
 	rlc	a
 	mov	r6,a
-;	bootloader.c:151: USB_Init();
+;	bootloader.c:174: USB_Init();
 	push	ar7
 	push	ar6
 	lcall	_USB_Init
 	pop	ar6
 	pop	ar7
-;	bootloader.c:155: uint8_t stay_in_bootloader = button_pressed || is_blank;
+;	bootloader.c:178: uint8_t stay_in_bootloader = button_pressed || is_blank;
 	mov	a,r7
 	jnz	00119$
 	mov	a,r6
@@ -2181,20 +2371,20 @@ _main:
 	clr	a
 	rlc	a
 	mov	r7,a
-;	bootloader.c:157: while (1) {
+;	bootloader.c:180: while (1) {
 	mov	r3,#0x00
 	mov	r4,#0x00
 	mov	r5,#0x00
 	mov	r6,#0x00
 00108$:
-;	bootloader.c:158: USB_Process();
+;	bootloader.c:181: USB_Process();
 	push	ar7
 	push	ar6
 	push	ar5
 	push	ar4
 	push	ar3
 	lcall	_USB_Process
-;	bootloader.c:160: if (USB_Available()) {
+;	bootloader.c:183: if (USB_Available()) {
 	lcall	_USB_Available
 	mov	a, dpl
 	pop	ar3
@@ -2203,9 +2393,9 @@ _main:
 	pop	ar6
 	pop	ar7
 	jz	00102$
-;	bootloader.c:161: stay_in_bootloader = 1; // Handshake received, cancel timeout
+;	bootloader.c:184: stay_in_bootloader = 1; // Handshake received, cancel timeout
 	mov	r7,#0x01
-;	bootloader.c:162: ProcessPacket();
+;	bootloader.c:185: ProcessPacket();
 	push	ar7
 	push	ar6
 	push	ar5
@@ -2218,10 +2408,10 @@ _main:
 	pop	ar6
 	pop	ar7
 00102$:
-;	bootloader.c:165: if (!stay_in_bootloader) {
+;	bootloader.c:188: if (!stay_in_bootloader) {
 	mov	a,r7
 	jnz	00108$
-;	bootloader.c:166: timeout++;
+;	bootloader.c:189: timeout++;
 	inc	r3
 	cjne	r3,#0x00,00199$
 	inc	r4
@@ -2230,7 +2420,7 @@ _main:
 	cjne	r5,#0x00,00199$
 	inc	r6
 00199$:
-;	bootloader.c:167: if (timeout > 2000000UL) { // ~4.0s timeout at 24MHz
+;	bootloader.c:190: if (timeout > 2000000UL) { // ~4.0s timeout at 24MHz
 	clr	c
 	mov	a,#0x80
 	subb	a,r3
@@ -2242,7 +2432,7 @@ _main:
 	subb	a,r6
 	jnc	00108$
 ;	free result
-;	bootloader.c:168: JumpToApp();
+;	bootloader.c:191: JumpToApp();
 	push	ar7
 	push	ar6
 	push	ar5
@@ -2254,7 +2444,7 @@ _main:
 	pop	ar5
 	pop	ar6
 	pop	ar7
-;	bootloader.c:172: }
+;	bootloader.c:195: }
 	ljmp	00108$
 	.area CSEG    (CODE)
 	.area CONST   (CODE)

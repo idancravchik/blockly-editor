@@ -1,7 +1,56 @@
 #include "iap_flash.h"
 
+uint8_t IAP_ErasePage(uint16_t addr) {
+    uint8_t status;
+    uint8_t ea_saved;
+
+    // Safety bounds check: never erase the bootloader partition
+    if (addr >= BOOTLOADER_START) {
+        return 0x03; // Out of bounds error
+    }
+
+    // Align address to 1KB boundary (0x0400)
+    addr &= ~0x03FF;
+
+    // Disable interrupts
+    ea_saved = EA;
+    EA = 0;
+
+    // Enter safe mode and enable code write/erase
+    SAFE_MOD = 0x55;
+    SAFE_MOD = 0xAA;
+    GLOBAL_CFG |= bCODE_WE;
+    SAFE_MOD = 0x00;
+
+    // Load page address
+    ROM_ADDR_L = (uint8_t)(addr & 0xFF);
+    ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
+
+    // Trigger flash page erase
+    ROM_CTRL = ROM_CMD_ERASE;
+
+    // Read result status
+    status = ROM_STATUS;
+
+    // Re-lock safe mode and disable code write
+    SAFE_MOD = 0x55;
+    SAFE_MOD = 0xAA;
+    GLOBAL_CFG &= ~bCODE_WE;
+    SAFE_MOD = 0x00;
+
+    // Restore interrupt state
+    EA = ea_saved;
+
+    // Success if address valid (bit 6 set) and no command error (bit 1 clear)
+    if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
+        return 0x04; // Erase error
+    }
+    return 0x00;
+}
+
 uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     uint8_t status;
+    uint8_t ea_saved;
 
     // Safety bounds check: never overwrite the bootloader partition
     if (addr >= BOOTLOADER_START) {
@@ -12,6 +61,7 @@ uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     addr &= ~0x0001;
 
     // Disable all interrupts during flash programming
+    ea_saved = EA;
     EA = 0;
 
     // Enter safe mode and enable code write
@@ -39,7 +89,7 @@ uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     SAFE_MOD = 0x00;
 
     // Re-enable interrupts if they were enabled
-    EA = 1;
+    EA = ea_saved;
 
     // Success if address valid (bit 6 set) and no command error (bit 1 clear)
     if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {

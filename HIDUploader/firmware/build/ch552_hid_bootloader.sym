@@ -226,7 +226,7 @@ Symbol Table
  19 _CfgDesc                                                       000034 R
     _DPH                                                        =  000083 G
     _DPL                                                        =  000082 G
- 18 _DelayMs                                                       000384 R
+ 18 _DelayMs                                                       0003D9 R
  19 _DevDesc                                                       000000 R
     _EA                                                         =  0000AF G
     _ES                                                         =  0000AC G
@@ -249,12 +249,13 @@ Symbol Table
     _F1                                                         =  0000D1 G
     _GLOBAL_CFG                                                 =  0000B1 G
     _GPIO_IE                                                    =  0000C7 G
- 18 _Handle_EP0_Setup                                              00010C R
- 18 _IAP_CalculateCRC16                                            000066 GR
+ 18 _Handle_EP0_Setup                                              000161 R
+ 18 _IAP_CalculateCRC16                                            0000BB GR
   6 _IAP_CalculateCRC16_PARM_2                                     000000 GR
-  6 _IAP_CalculateCRC16_i_20000_21                                 000002 R
- 18 _IAP_ReadWord                                                  00004B GR
- 18 _IAP_WriteWord                                                 000000 GR
+  6 _IAP_CalculateCRC16_i_20000_28                                 000002 R
+ 18 _IAP_ErasePage                                                 000000 GR
+ 18 _IAP_ReadWord                                                  0000A0 GR
+ 18 _IAP_WriteWord                                                 00004D GR
   6 _IAP_WriteWord_PARM_2                                          000000 GR
     _IE                                                         =  0000A8 G
     _IE0                                                        =  000089 G
@@ -274,7 +275,7 @@ Symbol Table
     _IP_EX                                                      =  0000E9 G
     _IT0                                                        =  000088 G
     _IT1                                                        =  00008A G
- 18 _JumpToApp                                                     0003AF R
+ 18 _JumpToApp                                                     000404 R
     _MISO                                                       =  000096 G
     _MOSI                                                       =  000095 G
     _OV                                                         =  0000D2 G
@@ -297,12 +298,12 @@ Symbol Table
     _P3_2                                                       =  0000B2 G
     _P3_3                                                       =  0000B3 G
     _P3_4                                                       =  0000B4 G
-    _P3_5                                                       =  0000B5 G
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)          Page 6
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    _P3_5                                                       =  0000B5 G
     _P3_6                                                       =  0000B6 G
     _P3_7                                                       =  0000B7 G
     _P3_DIR_PU                                                  =  000097 G
@@ -326,17 +327,19 @@ Symbol Table
     _PWM_DATA2                                                  =  00009B G
     _PX0                                                        =  0000B8 G
     _PX1                                                        =  0000BA G
- 18 _ProcessPacket                                                 0003BC R
-  5 _ProcessPacket_addr_10000_119                                  00000E R
-  5 _ProcessPacket_cmd_10000_119                                   00000C R
-  5 _ProcessPacket_err_40000_129                                   000011 R
-  5 _ProcessPacket_i_50000_130                                     000012 R
-  5 _ProcessPacket_len_10000_119                                   000010 R
-  5 _ProcessPacket_rx_10000_119                                    000009 R
-  5 _ProcessPacket_seq_10000_119                                   00000D R
-  5 _ProcessPacket_sloc0_1_0                                       000013 R
-  5 _ProcessPacket_sloc1_1_0                                       000014 R
-  5 _ProcessPacket_sloc2_1_0                                       000016 R
+ 18 _ProcessPacket                                                 000411 R
+  5 _ProcessPacket_addr_10000_126                                  000010 R
+  5 _ProcessPacket_cmd_10000_126                                   00000E R
+  5 _ProcessPacket_end_page_40000_136                              000014 R
+  5 _ProcessPacket_erase_err_40000_136                             000013 R
+  5 _ProcessPacket_err_40000_144                                   000016 R
+  5 _ProcessPacket_i_50000_145                                     000017 R
+  5 _ProcessPacket_len_10000_126                                   000012 R
+  5 _ProcessPacket_rx_10000_126                                    00000B R
+  5 _ProcessPacket_seq_10000_126                                   00000F R
+  5 _ProcessPacket_sloc0_1_0                                       000018 R
+  5 _ProcessPacket_sloc1_1_0                                       000019 R
+  5 _ProcessPacket_sloc2_1_0                                       00001B R
     _RB8                                                        =  00009A G
     _RCAP2                                                      =  00CBCA G
     _RCAP2H                                                     =  0000CB G
@@ -355,14 +358,14 @@ Symbol Table
     _RS0                                                        =  0000D3 G
     _RS1                                                        =  0000D4 G
     _RXD                                                        =  0000B0 G
-    _RXD1                                                       =  000096 G
-    _RXD1_                                                      =  0000B4 G
-    _RXD_                                                       =  000092 G
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)          Page 7
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    _RXD1                                                       =  000096 G
+    _RXD1_                                                      =  0000B4 G
+    _RXD_                                                       =  000092 G
  19 _ReportDesc                                                    000012 R
     _S0_FREE                                                    =  0000FB G
     _S0_FST_ACT                                                 =  0000FF G
@@ -415,14 +418,14 @@ Symbol Table
     _TI                                                         =  000099 G
     _TIN0                                                       =  000090 G
     _TIN1                                                       =  000091 G
-    _TIN2                                                       =  000094 G
-    _TIN3                                                       =  000095 G
-    _TIN4                                                       =  000096 G
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)          Page 8
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    _TIN2                                                       =  000094 G
+    _TIN3                                                       =  000095 G
+    _TIN4                                                       =  000096 G
     _TIN5                                                       =  000097 G
     _TKEY_CTRL                                                  =  0000C3 G
     _TKEY_DAT                                                   =  00C5C4 G
@@ -475,33 +478,33 @@ Symbol Table
     _UEP4_1_MOD                                                 =  0000EA G
     _UEP4_CTRL                                                  =  0000DE G
     _UEP4_T_LEN                                                 =  0000DF G
-    _UIF_BUS_RST                                                =  0000D8 G
-    _UIF_DETECT                                                 =  0000D8 G
-    _UIF_FIFO_OV                                                =  0000DC G
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)          Page 9
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    _UIF_BUS_RST                                                =  0000D8 G
+    _UIF_DETECT                                                 =  0000D8 G
+    _UIF_FIFO_OV                                                =  0000DC G
     _UIF_HST_SOF                                                =  0000DB G
     _UIF_SUSPEND                                                =  0000DA G
     _UIF_TRANSFER                                               =  0000D9 G
- 18 _USB_Available                                                 000349 GR
+ 18 _USB_Available                                                 00039E GR
     _USB_CTRL                                                   =  0000E2 G
     _USB_C_CTRL                                                 =  000091 G
     _USB_DEV_AD                                                 =  0000E3 G
- 18 _USB_GetRxBuffer                                               00034D GR
+ 18 _USB_GetRxBuffer                                               0003A2 GR
     _USB_INT_EN                                                 =  0000E1 G
     _USB_INT_FG                                                 =  0000D8 G
     _USB_INT_ST                                                 =  0000D9 G
- 18 _USB_Init                                                      0000C9 GR
+ 18 _USB_Init                                                      00011E GR
     _USB_MIS_ST                                                 =  0000DA G
- 18 _USB_Process                                                   00027D GR
+ 18 _USB_Process                                                   0002D2 GR
     _USB_RX_LEN                                                 =  0000DB G
- 18 _USB_ReleaseRx                                                 000354 GR
- 18 _USB_SendReport                                                00035B GR
+ 18 _USB_ReleaseRx                                                 0003A9 GR
+ 18 _USB_SendReport                                                0003B0 GR
   5 _USB_SendReport_PARM_2                                         000007 GR
- 18 _USB_Shutdown                                                  00037D GR
+ 18 _USB_Shutdown                                                  0003D2 GR
     _U_IS_NAK                                                   =  0000DF G
     _U_SIE_FREE                                                 =  0000DD G
     _U_TOG_OK                                                   =  0000DE G
@@ -523,7 +526,8 @@ Symbol Table
   F __sdcc_program_startup                                         000049 GR
   7 __start__stack                                                 000000 GR
   5 _is_unlocked                                                   000008 R
- 18 _main                                                          000692 GR
+  5 _last_erased_page                                              000009 R
+ 18 _main                                                          000766 GR
   A _main_sloc0_1_0                                                000000 R
     _memset                                                        ****** GX
     _memset_PARM_2                                                 ****** GX
@@ -534,15 +538,15 @@ Symbol Table
   5 _setup_tx_ptr                                                  000003 R
   5 _usb_config                                                    000002 R
   5 _usb_dev_addr                                                  000001 R
-    a                                                           =  0000E0 L
-    a.0                                                         =  0000E0 L
-    a.1                                                         =  0000E1 L
-    a.2                                                         =  0000E2 L
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)         Page 10
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    a                                                           =  0000E0 L
+    a.0                                                         =  0000E0 L
+    a.1                                                         =  0000E1 L
+    a.2                                                         =  0000E2 L
     a.3                                                         =  0000E3 L
     a.4                                                         =  0000E4 L
     a.5                                                         =  0000E5 L
@@ -594,15 +598,15 @@ Symbol Table
     ie.0                                                        =  0000A8 L
     ie.1                                                        =  0000A9 L
     ie.2                                                        =  0000AA L
-    ie.3                                                        =  0000AB L
-    ie.4                                                        =  0000AC L
-    ie.5                                                        =  0000AD L
-    ie.7                                                        =  0000AF L
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)         Page 11
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    ie.3                                                        =  0000AB L
+    ie.4                                                        =  0000AC L
+    ie.5                                                        =  0000AD L
+    ie.7                                                        =  0000AF L
     ie0                                                         =  000089 L
     ie1                                                         =  00008B L
     int0                                                        =  0000B2 L
@@ -654,15 +658,15 @@ Symbol Table
     p3.5                                                        =  0000B5 L
     p3.6                                                        =  0000B6 L
     p3.7                                                        =  0000B7 L
-    pcon                                                        =  000087 L
-    ps                                                          =  0000BC L
-    psw                                                         =  0000D0 L
-    psw.0                                                       =  0000D0 L
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)         Page 12
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    pcon                                                        =  000087 L
+    ps                                                          =  0000BC L
+    psw                                                         =  0000D0 L
+    psw.0                                                       =  0000D0 L
     psw.1                                                       =  0000D1 L
     psw.2                                                       =  0000D2 L
     psw.3                                                       =  0000D3 L
@@ -714,15 +718,15 @@ Symbol Table
     t2con.1                                                     =  0000C9 L
     t2con.2                                                     =  0000CA L
     t2con.3                                                     =  0000CB L
-    t2con.4                                                     =  0000CC L
-    t2con.5                                                     =  0000CD L
-    t2con.6                                                     =  0000CE L
-    t2con.7                                                     =  0000CF L
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)         Page 13
 Hexadecimal [24-Bits]
 
 Symbol Table
 
+    t2con.4                                                     =  0000CC L
+    t2con.5                                                     =  0000CD L
+    t2con.6                                                     =  0000CE L
+    t2con.7                                                     =  0000CF L
     tb8                                                         =  00009B L
     tclk                                                        =  0000CC L
     tcon                                                        =  000088 L
@@ -750,7 +754,6 @@ Symbol Table
     tr2                                                         =  0000CA L
     txd                                                         =  0000B1 L
 
-
 ASxxxx Assembler V05.50.4+NoICE+SDCCmods-WIP-R14  (Intel 8051)         Page 14
 Hexadecimal [24-Bits]
 
@@ -761,7 +764,7 @@ Area Table
    2 RSEG0                                      size      0   flags    8
    3 RSEG1                                      size      0   flags    8
    4 REG_BANK_0                                 size      8   flags    4
-   5 DSEG                                       size     19   flags    0
+   5 DSEG                                       size     1E   flags    0
    6 OSEG                                       size      4   flags    4
    7 SSEG                                       size      1   flags    0
    8 ISEG                                       size      0   flags    0
@@ -778,9 +781,9 @@ Area Table
   13 GSINIT3                                    size      0   flags   20
   14 GSINIT4                                    size      0   flags   20
   15 GSINIT5                                    size      0   flags   20
-  16 GSINIT                                     size     14   flags   20
+  16 GSINIT                                     size     1A   flags   20
   17 GSFINAL                                    size      3   flags   20
-  18 CSEG                                       size    781   flags   20
+  18 CSEG                                       size    855   flags   20
   19 CONST                                      size     99   flags   20
   1A XINIT                                      size      0   flags   20
   1B CABS                                       size      0   flags   28
