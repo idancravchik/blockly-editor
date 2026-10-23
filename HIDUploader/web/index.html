@@ -109,9 +109,12 @@
       <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
         After flashing, open the USB Virtual COM port here (or in Arduino IDE / PuTTY at 115200 baud) to view the incoming output:
       </p>
-      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
         <button id="serialConnectBtn" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
           🔌 Open Serial Monitor
+        </button>
+        <button id="serialResetBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;" title="Send Magic Byte (0xFE) to reboot into Bootloader">
+          ⚡ Reset to Bootloader (0xFE)
         </button>
         <button id="serialClearBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">
           Clear Terminal

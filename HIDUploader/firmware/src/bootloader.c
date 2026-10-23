@@ -164,7 +164,7 @@ void main(void) {
 
         if (!stay_in_bootloader) {
             timeout++;
-            if (timeout > 1500000UL) { // ~3.0s timeout at 24MHz
+            if (timeout > 2000000UL) { // ~4.0s timeout at 24MHz
                 JumpToApp();
             }
         }

@@ -217,9 +217,41 @@ private void startFlashing(UsbDevice device) {
    ```
 2. Select **Tools -> Board -> CH55x Boards -> CH552 Board**.
 3. Keep default settings:
-   * **Clock Source**: Internal 16MHz
+   * **Clock Source**: Internal 16MHz (or 24MHz)
    * **USB Settings**: Default CDC
-4. Write your C code (standard `setup()` and `loop()`).
+4. In your sketch, include the **Auto-Reset listener** so Android can re-flash the board without physical buttons:
+   ```c
+   #include <Serial.h>
+
+   #define BOOTLOADER_MAGIC_BYTE 0xFE
+
+   void jump_to_bootloader(void) {
+     EA = 0;         // Disable interrupts
+     USB_CTRL = 0;   // Shut down USB
+     UDEV_CTRL = 0;
+     for (uint16_t i = 0; i < 50000; i++) {
+       __asm nop __endasm;
+     }
+     __asm
+       ljmp 0x2C00   // Jump to HID Bootloader
+     __endasm;
+   }
+
+   void setup() {
+     // Your setup
+   }
+
+   void loop() {
+     // Check for flasher reset command
+     if (USBSerial_available()) {
+       if (USBSerial_read() == BOOTLOADER_MAGIC_BYTE) {
+         jump_to_bootloader();
+       }
+     }
+
+     // Your normal sketch code...
+   }
+   ```
 5. Click **Sketch -> Export Compiled Binary** (`Ctrl + Alt + S`).
 6. Copy the `.hex` file from the sketch folder into your Android project's `app/src/main/assets/firmware.hex`.
 

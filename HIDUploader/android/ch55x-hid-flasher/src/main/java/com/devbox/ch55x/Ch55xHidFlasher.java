@@ -26,11 +26,15 @@ import java.util.concurrent.Executors;
 
 /**
  * Android USB Host library for flashing WCH CH552 microcontrollers over USB HID (Java).
+ * Includes auto-detection and Auto-Reset from CDC Serial mode (0xC550) to HID Bootloader (0xC55D).
  */
 public class Ch55xHidFlasher {
 
     public static final int VENDOR_ID = 0x1209;
-    public static final int PRODUCT_ID = 0xC55D;
+    public static final int PRODUCT_ID = 0xC55D;      // USB HID Bootloader
+    public static final int CDC_PRODUCT_ID = 0xC550;  // USB CDC Serial User Application
+
+    public static final byte MAGIC_RESET_BYTE = (byte) 0xFE; // Trigger jump to 0x2C00
 
     public static final byte CMD_HELLO = 0x01;
     public static final byte CMD_UNLOCK = 0x02;
@@ -87,12 +91,25 @@ public class Ch55xHidFlasher {
     }
 
     /**
-     * Finds connected CH552 HID devices matching VID 0x1209 and PID 0xC55D.
+     * Finds connected CH552 HID Bootloader devices matching VID 0x1209 and PID 0xC55D.
      */
     public UsbDevice findConnectedDevice() {
         HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
         for (UsbDevice device : deviceList.values()) {
             if (device.getVendorId() == VENDOR_ID && device.getProductId() == PRODUCT_ID) {
+                return device;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds connected CH552 CDC Serial devices matching VID 0x1209 and PID 0xC550.
+     */
+    public UsbDevice findConnectedCdcDevice() {
+        HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+        for (UsbDevice device : deviceList.values()) {
+            if (device.getVendorId() == VENDOR_ID && device.getProductId() == CDC_PRODUCT_ID) {
                 return device;
             }
         }
@@ -148,6 +165,61 @@ public class Ch55xHidFlasher {
     }
 
     /**
+     * Sends the magic reset byte to a connected CH552 CDC Serial device,
+     * commanding it to disconnect USB and jump to the HID Bootloader at 0x2C00.
+     */
+    public void sendCdcReset(UsbDevice cdcDevice) throws IOException {
+        UsbDeviceConnection conn = usbManager.openDevice(cdcDevice);
+        if (conn == null) {
+            throw new IOException("Failed to open connection to CDC Serial device. Ensure permissions are granted.");
+        }
+
+        try {
+            UsbEndpoint epOut = null;
+            UsbInterface targetInterface = null;
+
+            // Search for bulk OUT endpoint across all interfaces
+            for (int i = 0; i < cdcDevice.getInterfaceCount(); i++) {
+                UsbInterface iface = cdcDevice.getInterface(i);
+                for (int j = 0; j < iface.getEndpointCount(); j++) {
+                    UsbEndpoint ep = iface.getEndpoint(j);
+                    if (ep.getDirection() == UsbConstants.USB_DIR_OUT &&
+                            ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                        epOut = ep;
+                        targetInterface = iface;
+                        break;
+                    }
+                }
+                if (epOut != null) break;
+            }
+
+            if (epOut == null || targetInterface == null) {
+                throw new IOException("CDC Bulk OUT endpoint not found on device.");
+            }
+
+            if (!conn.claimInterface(targetInterface, true)) {
+                throw new IOException("Failed to claim CDC interface " + targetInterface.getId());
+            }
+
+            try {
+                // Assert DTR/RTS (CDC Set_Control_Line_State request 0x22, value 0x03)
+                conn.controlTransfer(0x21, 0x22, 0x03, 0, null, 0, 1000);
+
+                // Send the magic reset byte (0xFE)
+                byte[] payload = new byte[]{MAGIC_RESET_BYTE};
+                int sent = conn.bulkTransfer(epOut, payload, payload.length, 1000);
+                if (sent < payload.length) {
+                    throw new IOException("Failed to send reset byte to CDC: transferred " + sent + " bytes.");
+                }
+            } finally {
+                conn.releaseInterface(targetInterface);
+            }
+        } finally {
+            conn.close();
+        }
+    }
+
+    /**
      * Reads an Intel HEX file from app assets.
      */
     public String readHexFromAssets(String fileName) throws IOException {
@@ -164,29 +236,90 @@ public class Ch55xHidFlasher {
 
     /**
      * 1-Step Automatic Flashing:
-     * 1. Finds the connected CH552 board (VID 0x1209, PID 0xC55D).
-     * 2. Checks and requests USB permission automatically.
-     * 3. Flashes the firmware in a background thread.
-     * 4. Delivers all callbacks safely on Android's Main (UI) thread!
+     * 1. Detects whether CH552 is in HID Bootloader mode (0xC55D) or CDC Serial mode (0xC550).
+     * 2. If in CDC Serial mode, triggers Auto-Reset and seamlessly waits for HID Bootloader.
+     * 3. Checks and requests USB permissions automatically.
+     * 4. Flashes the firmware in a background thread.
+     * 5. Delivers all callbacks safely on Android's Main (UI) thread!
      */
     public void flashAuto(String hexContent, FlasherCallback callback) {
         FlasherCallback safeCallback = wrapMainThread(callback);
-        UsbDevice device = findConnectedDevice();
-        if (device == null) {
-            if (safeCallback != null) {
-                safeCallback.onError(new IOException("Idan's DevBoard (CH552) not found. Connect board via USB OTG adapter."));
-            }
+
+        // Scenario 1: Device is already in HID Bootloader mode
+        UsbDevice hidDevice = findConnectedDevice();
+        if (hidDevice != null) {
+            flashDirect(hidDevice, hexContent, safeCallback);
             return;
         }
 
+        // Scenario 2: Device is running in CDC Serial mode
+        UsbDevice cdcDevice = findConnectedCdcDevice();
+        if (cdcDevice != null) {
+            if (safeCallback != null) {
+                safeCallback.onStatus("Found CH552 in CDC Serial mode. Requesting permission to switch to Bootloader...");
+            }
+
+            requestPermission(cdcDevice, granted -> {
+                if (!granted) {
+                    if (safeCallback != null) {
+                        safeCallback.onError(new IOException("CDC USB permission was denied by user."));
+                    }
+                    return;
+                }
+
+                executor.execute(() -> {
+                    try {
+                        if (safeCallback != null) {
+                            safeCallback.onStatus("Switching CH552 from Serial CDC to HID Bootloader...");
+                        }
+                        sendCdcReset(cdcDevice);
+
+                        // Wait for device to detach and re-enumerate as HID (VID: 0x1209, PID: 0xC55D)
+                        long startTime = System.currentTimeMillis();
+                        UsbDevice newHidDevice = null;
+                        while (System.currentTimeMillis() - startTime < 4000) {
+                            try {
+                                Thread.sleep(150);
+                            } catch (InterruptedException ignored) {}
+
+                            newHidDevice = findConnectedDevice();
+                            if (newHidDevice != null) {
+                                break;
+                            }
+                        }
+
+                        if (newHidDevice == null) {
+                            throw new IOException("Timed out waiting for CH552 to reboot into HID Bootloader.");
+                        }
+
+                        UsbDevice finalDevice = newHidDevice;
+                        mainHandler.post(() -> flashDirect(finalDevice, hexContent, safeCallback));
+
+                    } catch (Exception e) {
+                        if (safeCallback != null) {
+                            safeCallback.onError(e);
+                        }
+                    }
+                });
+            });
+            return;
+        }
+
+        // Scenario 3: Neither device detected
         if (safeCallback != null) {
-            safeCallback.onStatus("Requesting USB device permission...");
+            safeCallback.onError(new IOException("CH552 device not found. Connect board via USB OTG adapter."));
+        }
+    }
+
+    private void flashDirect(UsbDevice device, String hexContent, FlasherCallback safeCallback) {
+        if (safeCallback != null) {
+            safeCallback.onStatus("Requesting USB HID device permission...");
         }
 
         requestPermission(device, granted -> {
             if (!granted) {
                 if (safeCallback != null) {
-                    safeCallback.onError(new IOException("USB permission was denied by user."));
+                    safeCallback.onError(new IOException("USB HID permission was denied by user."));
                 }
                 return;
             }

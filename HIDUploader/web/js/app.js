@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Serial Monitor Elements
   const serialConnectBtn = document.getElementById('serialConnectBtn');
+  const serialResetBtn = document.getElementById('serialResetBtn');
   const serialClearBtn = document.getElementById('serialClearBtn');
   const serialTerminal = document.getElementById('serialTerminal');
   const serialStatusBadge = document.getElementById('serialStatusBadge');
@@ -203,6 +204,25 @@ document.addEventListener('DOMContentLoaded', () => {
   serialClearBtn.addEventListener('click', () => {
     serialTerminal.textContent = '';
   });
+
+  if (serialResetBtn) {
+    serialResetBtn.addEventListener('click', async () => {
+      if (!serialPort || !serialPort.writable) {
+        log("Cannot send reset: Open Serial Monitor first.", 'error');
+        alert("Please click 'Open Serial Monitor' first to connect to the COM port.");
+        return;
+      }
+      try {
+        log("Sending Magic Byte (0xFE) to trigger jump to HID Bootloader...", 'info');
+        const writer = serialPort.writable.getWriter();
+        await writer.write(new Uint8Array([0xFE]));
+        writer.releaseLock();
+        log("Magic Byte sent! CH552 is disconnecting and entering HID Bootloader.", 'success');
+      } catch (err) {
+        log(`Failed to send reset: ${err.message}`, 'error');
+      }
+    });
+  }
 
   serialConnectBtn.addEventListener('click', async () => {
     if (serialReading) {

@@ -345,7 +345,31 @@ You write standard Arduino sketches with **CH55xduino** and export the `.hex` fi
    https://raw.githubusercontent.com/DeqingSun/ch55xduino/ch55xduino/package_ch55xduino_mcs51_index.json
    ```
 2. Select **Tools -> Board -> CH55x Boards -> CH552 Board**.
-3. Write your sketch normally (e.g. GPIO, USB, ADC, PWM).
+3. Include the **Auto-Reset listener** in your sketch so Android and Web flashers can switch from CDC Serial to Bootloader automatically:
+   ```c
+   #include <Serial.h>
+
+   #define BOOTLOADER_MAGIC_BYTE 0xFE
+
+   void jump_to_bootloader(void) {
+     EA = 0;
+     USB_CTRL = 0;
+     UDEV_CTRL = 0;
+     for (uint16_t i = 0; i < 50000; i++) { __asm nop __endasm; }
+     __asm ljmp 0x2C00 __endasm;
+   }
+
+   void setup() { /* your setup */ }
+
+   void loop() {
+     if (USBSerial_available()) {
+       if (USBSerial_read() == BOOTLOADER_MAGIC_BYTE) {
+         jump_to_bootloader();
+       }
+     }
+     // your sketch logic...
+   }
+   ```
 4. Click **Sketch -> Export Compiled Binary** (`Ctrl + Alt + S`).
 5. Look in your sketch folder for the `.hex` file (e.g. `MySketch.ino.hex`).
 6. Feed that `.hex` file directly to the **Web Flasher** or your **Android App**!
@@ -354,9 +378,11 @@ You write standard Arduino sketches with **CH55xduino** and export the `.hex` fi
 
 ## 📌 Bootloader Entry Conditions
 
-1. **Auto-Timeout Window (~3 seconds)**:
-   - On power-up, the bootloader waits ~3s for a connection. If the phone/browser connects, it stays in bootloader mode. If no connection occurs, it boots your sketch immediately.
-2. **Hardware Boot Button (Pin 32 / P3.2 or Pin 15 / P1.5)**:
-   - Connect a push-button between **Pin 32 (P3.2)** or **Pin 15 (P1.5)** and **GND**. Holding this button while plugging into USB locks the chip into bootloader mode permanently until flashed.
-3. **Blank Chip Fallback**:
+1. **Auto-Reset from CDC Serial (Seamless)**:
+   - When the board runs a CDC Serial sketch, the Android app or Web Serial sends the magic byte (`0xFE`). The chip resets its USB stack and jumps to `0x2C00`, reconnecting as USB HID (`1209:C55D`) ready for flashing.
+2. **Auto-Timeout Window (~4 seconds)**:
+   - When entering the bootloader, it waits ~4 seconds for the flasher handshake (`CMD_HELLO`). Once received, the timeout is cancelled and flashing proceeds.
+3. **Hardware Boot Button (Pin 32 / P3.2 or Pin 15 / P1.5)**:
+   - Connect a push-button between **Pin 32 (P3.2)** or **Pin 15 (P1.5)** and **GND**. Holding this button while jumping or plugging into USB locks the chip into bootloader mode permanently until flashed.
+4. **Blank Chip Fallback**:
    - If the user flash partition is blank (`0xFFFF`), the chip stays in bootloader mode automatically.

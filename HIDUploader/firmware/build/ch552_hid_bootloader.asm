@@ -2230,13 +2230,13 @@ _main:
 	cjne	r5,#0x00,00199$
 	inc	r6
 00199$:
-;	bootloader.c:167: if (timeout > 1500000UL) { // ~3.0s timeout at 24MHz
+;	bootloader.c:167: if (timeout > 2000000UL) { // ~4.0s timeout at 24MHz
 	clr	c
-	mov	a,#0x60
+	mov	a,#0x80
 	subb	a,r3
-	mov	a,#0xe3
+	mov	a,#0x84
 	subb	a,r4
-	mov	a,#0x16
+	mov	a,#0x1e
 	subb	a,r5
 	clr	a
 	subb	a,r6

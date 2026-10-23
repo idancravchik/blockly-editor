@@ -577,7 +577,7 @@ CONST                               000034EE    00000099 =         153. bytes (R
 
 Files Linked                              [ module(s) ]
 
-..\build\ch552_hid_bootloader.rel         [  ]
+../build/ch552_hid_bootloader.rel         [  ]
 
 
 Libraries Linked                          [ object file ]
