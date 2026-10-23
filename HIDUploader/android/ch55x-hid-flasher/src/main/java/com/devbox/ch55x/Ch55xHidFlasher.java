@@ -115,11 +115,14 @@ public class Ch55xHidFlasher {
             return;
         }
 
+        Intent intent = new Intent(ACTION_USB_PERMISSION);
+        intent.setPackage(context.getPackageName());
+
         int flags = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ? PendingIntent.FLAG_MUTABLE : 0;
         PendingIntent permissionIntent = PendingIntent.getBroadcast(
                 context,
                 0,
-                new Intent(ACTION_USB_PERMISSION),
+                intent,
                 flags
         );
 
