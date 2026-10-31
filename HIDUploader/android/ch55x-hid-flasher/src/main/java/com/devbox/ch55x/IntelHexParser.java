@@ -59,8 +59,17 @@ public class IntelHexParser {
 
         while ((line = reader.readLine()) != null) {
             String trimmed = line.trim();
-            if (!trimmed.startsWith(":")) {
+            if (!trimmed.startsWith(":") || trimmed.length() < 11) {
                 continue;
+            }
+
+            // Verify Intel HEX line checksum
+            int sum = 0;
+            for (int i = 1; i < trimmed.length() - 1; i += 2) {
+                sum += Integer.parseInt(trimmed.substring(i, i + 2), 16);
+            }
+            if ((sum & 0xFF) != 0) {
+                throw new IOException("Corrupted Intel HEX line checksum mismatch: " + trimmed);
             }
 
             int byteCount = Integer.parseInt(trimmed.substring(1, 3), 16);

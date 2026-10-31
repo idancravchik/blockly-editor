@@ -2,6 +2,7 @@
 
 uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     uint8_t status;
+    uint8_t ea_saved;
 
     // Safety bounds check: never overwrite the bootloader partition
     if (addr >= BOOTLOADER_START) {
@@ -12,13 +13,13 @@ uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     addr &= ~0x0001;
 
     // Disable all interrupts during flash programming
+    ea_saved = EA;
     EA = 0;
 
     // Enter safe mode and enable code write
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
     GLOBAL_CFG |= bCODE_WE;
-    SAFE_MOD = 0x00;
 
     // Load address and 16-bit word
     ROM_ADDR_L = (uint8_t)(addr & 0xFF);
@@ -29,7 +30,7 @@ uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     // Trigger flash write
     ROM_CTRL = ROM_CMD_WRITE;
 
-    // Read result status
+    // Read result status (hardware pauses CPU during write)
     status = ROM_STATUS;
 
     // Re-lock safe mode and disable code write
@@ -38,8 +39,8 @@ uint8_t IAP_WriteWord(uint16_t addr, uint16_t data_word) {
     GLOBAL_CFG &= ~bCODE_WE;
     SAFE_MOD = 0x00;
 
-    // Re-enable interrupts if they were enabled
-    EA = 1;
+    // Restore interrupt state
+    EA = ea_saved;
 
     // Success if address valid (bit 6 set) and no command error (bit 1 clear)
     if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
@@ -74,34 +75,37 @@ uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length) {
     return crc;
 }
 
-#ifndef ROM_CMD_ERASE
-#define ROM_CMD_ERASE 0xA6
-#endif
-
 uint8_t IAP_ErasePage(uint16_t addr) {
     uint8_t status;
     uint8_t ea_saved;
 
-    if (addr >= BOOTLOADER_START) return 0x03;
+    // Safety bounds check: never erase the bootloader partition
+    if (addr >= BOOTLOADER_START) {
+        return 0x03; // Out of bounds error
+    }
 
-    addr &= ~0x03FF; // יישור לבלוק 1KB
+    // Align address to 1KB block boundary
+    addr &= ~0x03FF;
 
     ea_saved = EA;
     EA = 0;
 
-    // כניסה ל-Safe Mode
+    // Enter safe mode and enable code write/erase
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
     GLOBAL_CFG |= bCODE_WE;
 
+    // Load page address
     ROM_ADDR_L = (uint8_t)(addr & 0xFF);
     ROM_ADDR_H = (uint8_t)((addr >> 8) & 0xFF);
 
-    ROM_CTRL = ROM_CMD_ERASE; // ביצוע המחיקה כשה-Safe Mode עדיין פתוח!
+    // Trigger flash page erase (0xA6)
+    ROM_CTRL = ROM_CMD_ERASE;
 
+    // Read result status (hardware pauses CPU during erase cycle)
     status = ROM_STATUS;
 
-    // נעילה רק בסיום הפעולה
+    // Re-lock safe mode and disable code write
     SAFE_MOD = 0x55;
     SAFE_MOD = 0xAA;
     GLOBAL_CFG &= ~bCODE_WE;
@@ -109,8 +113,29 @@ uint8_t IAP_ErasePage(uint16_t addr) {
 
     EA = ea_saved;
 
+    // Success if address valid (bit 6 set) and no command error (bit 1 clear)
     if ((status & bROM_CMD_ERR) || !(status & bROM_ADDR_OK)) {
-        return 0x04;
+        return 0x04; // Erase error
+    }
+    return 0x00;
+}
+
+uint8_t IAP_EraseRange(uint16_t end_addr) {
+    uint16_t p;
+    if (end_addr == 0 || end_addr > BOOTLOADER_START) {
+        end_addr = BOOTLOADER_START;
+    } else {
+        // Round up to next 1KB page boundary
+        end_addr = (end_addr + 0x03FF) & ~0x03FF;
+        if (end_addr > BOOTLOADER_START) {
+            end_addr = BOOTLOADER_START;
+        }
+    }
+
+    for (p = USER_FLASH_START; p < end_addr; p += 0x0400) {
+        if (IAP_ErasePage(p) != 0) {
+            return 0x04; // Erase error
+        }
     }
     return 0x00;
 }

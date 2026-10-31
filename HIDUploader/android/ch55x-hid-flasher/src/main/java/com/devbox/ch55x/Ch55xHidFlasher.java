@@ -38,6 +38,7 @@ public class Ch55xHidFlasher {
 
     public static final byte CMD_HELLO = 0x01;
     public static final byte CMD_UNLOCK = 0x02;
+    public static final byte CMD_ERASE = 0x03;
     public static final byte CMD_WRITE_BLOCK = 0x04;
     public static final byte CMD_VERIFY_CRC = 0x05;
     public static final byte CMD_REBOOT = 0x06;
@@ -292,6 +293,10 @@ public class Ch55xHidFlasher {
                             throw new IOException("Timed out waiting for CH552 to reboot into HID Bootloader.");
                         }
 
+                        try {
+                            Thread.sleep(300); // Allow USB stack and OS to settle before claiming interface
+                        } catch (InterruptedException ignored) {}
+
                         UsbDevice finalDevice = newHidDevice;
                         mainHandler.post(() -> flashDirect(finalDevice, hexContent, safeCallback));
 
@@ -410,7 +415,15 @@ public class Ch55xHidFlasher {
                     throw new IOException("Bootloader rejected IAP unlock key.");
                 }
 
-                // 4. Flash blocks (CMD_WRITE_BLOCK)
+                // 4. Erase previous flash partition (CMD_ERASE)
+                if (safeCallback != null) safeCallback.onStatus("Erasing user Flash partition...");
+                byte[] eraseResp = transceive(connection, epOut, epIn, CMD_ERASE, seq++, 0, new byte[0]);
+                int eraseStatus = eraseResp[59] & 0xFF;
+                if (eraseStatus != 0x00 && eraseStatus != 0xFF) {
+                    throw new IOException("Flash erase failed with status 0x" + Integer.toHexString(eraseStatus));
+                }
+
+                // 5. Flash blocks (CMD_WRITE_BLOCK)
                 if (safeCallback != null) safeCallback.onStatus("Writing firmware (" + totalBytes + " bytes)...");
                 int offset = 0;
                 while (offset < totalBytes) {
@@ -454,6 +467,74 @@ public class Ch55xHidFlasher {
                     safeCallback.onSuccess();
                 }
 
+            } catch (Exception e) {
+                if (safeCallback != null) safeCallback.onError(e);
+            } finally {
+                if (usbInterface != null && connection != null) {
+                    connection.releaseInterface(usbInterface);
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            }
+        });
+    }
+
+    /**
+     * Explicitly erases the user flash partition (up to totalBytes, or entire partition if 0).
+     * Protected from erasing the bootloader.
+     */
+    public void eraseUserPartition(UsbDevice device, int totalBytes, FlasherCallback callback) {
+        FlasherCallback safeCallback = wrapMainThread(callback);
+        executor.execute(() -> {
+            UsbDeviceConnection connection = null;
+            UsbInterface usbInterface = null;
+            try {
+                if (safeCallback != null) safeCallback.onStatus("Opening USB device connection...");
+                connection = usbManager.openDevice(device);
+                if (connection == null) {
+                    throw new IOException("Failed to open USB device connection. Ensure permissions are granted.");
+                }
+
+                usbInterface = device.getInterface(0);
+                if (!connection.claimInterface(usbInterface, true)) {
+                    throw new IOException("Failed to claim USB HID interface 0.");
+                }
+
+                UsbEndpoint epOut = null;
+                UsbEndpoint epIn = null;
+                for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
+                    UsbEndpoint ep = usbInterface.getEndpoint(i);
+                    if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
+                        epOut = ep;
+                    } else if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
+                        epIn = ep;
+                    }
+                }
+                if (epOut == null || epIn == null) {
+                    throw new IOException("Required USB HID endpoints (IN/OUT) not found.");
+                }
+
+                byte seq = 0;
+                transceive(connection, epOut, epIn, CMD_HELLO, seq++, 0, new byte[0]);
+
+                byte[] unlockToken = new byte[]{(byte) 0x5A, (byte) 0xC3, (byte) 0x3C, (byte) 0xA5};
+                byte[] unlockResp = transceive(connection, epOut, epIn, CMD_UNLOCK, seq++, 0, unlockToken);
+                if (unlockResp[59] != 0) {
+                    throw new IOException("Bootloader rejected IAP unlock key.");
+                }
+
+                if (safeCallback != null) safeCallback.onStatus("Erasing user Flash partition...");
+                byte[] eraseResp = transceive(connection, epOut, epIn, CMD_ERASE, seq++, totalBytes, new byte[0]);
+                int eraseStatus = eraseResp[59] & 0xFF;
+                if (eraseStatus != 0x00) {
+                    throw new IOException("Flash erase failed with status 0x" + Integer.toHexString(eraseStatus));
+                }
+
+                if (safeCallback != null) {
+                    safeCallback.onStatus("User flash partition successfully erased.");
+                    safeCallback.onSuccess();
+                }
             } catch (Exception e) {
                 if (safeCallback != null) safeCallback.onError(e);
             } finally {

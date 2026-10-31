@@ -18,6 +18,7 @@ PID = 0xC55D
 
 CMD_HELLO = 0x01
 CMD_UNLOCK = 0x02
+CMD_ERASE = 0x03
 CMD_WRITE_BLOCK = 0x04
 CMD_VERIFY_CRC = 0x05
 CMD_REBOOT = 0x06
@@ -145,6 +146,12 @@ class Ch55xDevice:
         if resp[59] != 0:
             raise RuntimeError("CMD_UNLOCK rejected by bootloader")
 
+    def erase(self, length=0):
+        resp = self.transceive(CMD_ERASE, length)
+        status = resp[59]
+        if status != 0 and status != 0xFF:
+            raise RuntimeError(f"CMD_ERASE failed with status 0x{status:02X}")
+
     def write_block(self, addr, chunk):
         resp = self.transceive(CMD_WRITE_BLOCK, addr, chunk)
         status = resp[59]
@@ -194,6 +201,9 @@ def main():
 
         print("Unlocking Flash write engine...")
         flasher.unlock()
+
+        print("Erasing user Flash partition...")
+        flasher.erase(0)
 
         print(f"Flashing {length} bytes...")
         offset = 0

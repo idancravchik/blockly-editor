@@ -8,6 +8,7 @@ class Ch55xHidFlasher {
 
   static CMD_HELLO = 0x01;
   static CMD_UNLOCK = 0x02;
+  static CMD_ERASE = 0x03;
   static CMD_WRITE_BLOCK = 0x04;
   static CMD_VERIFY_CRC = 0x05;
   static CMD_REBOOT = 0x06;
@@ -162,6 +163,18 @@ class Ch55xHidFlasher {
   }
 
   /**
+   * Erases the user flash partition (up to totalBytes, or all if 0).
+   */
+  async erase(totalBytes = 0) {
+    const resp = await this.sendReport(Ch55xHidFlasher.CMD_ERASE, totalBytes, []);
+    const status = resp[59];
+
+    if (status !== 0x00 && status !== 0xFF) {
+      throw new Error(`CMD_ERASE failed with status 0x${status.toString(16)}.`);
+    }
+  }
+
+  /**
    * Writes a block of firmware bytes to flash memory.
    */
   async writeBlock(addr, chunk) {
@@ -237,6 +250,9 @@ class Ch55xHidFlasher {
 
     onStatus("Unlocking IAP Flash engine...");
     await this.unlock();
+
+    onStatus("Erasing user Flash partition...");
+    await this.erase(0);
 
     onStatus(`Flashing ${totalLength} bytes to Flash ROM...`);
     let offset = 0;

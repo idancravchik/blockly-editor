@@ -77,10 +77,14 @@ def main():
     mem_with_vector[0x0001] = 0x2C
     mem_with_vector[0x0002] = 0x00
     
+    version_tag = "v2.1"
+    
     # 0. Pure ASCII Intel HEX (with reset vector)
+    path_hex_ver = os.path.join(build_dir, f'ch552_hid_bootloader_{version_tag}.hex')
+    write_intel_hex(mem_with_vector, path_hex_ver)
     path_hex = os.path.join(build_dir, 'ch552_hid_bootloader.hex')
     write_intel_hex(mem_with_vector, path_hex)
-    print(f"Created: {path_hex} (ASCII Intel HEX with LJMP 0x2C00 vector)")
+    print(f"Created: {path_hex_ver} and {path_hex} (ASCII Intel HEX with LJMP 0x2C00 vector)")
     
     # 1. 14 KB Flash Image (0x0000 to 0x37FF = 14336 bytes)
     flash_14k = bytearray([0xFF] * 14336)
@@ -91,10 +95,13 @@ def main():
     for addr, val in mem.items():
         if addr < 14336:
             flash_14k[addr] = val
+    path_14k_ver = os.path.join(build_dir, f'ch552_hid_bootloader_{version_tag}.bin')
+    with open(path_14k_ver, 'wb') as f:
+        f.write(flash_14k)
     path_14k = os.path.join(build_dir, 'ch552_hid_bootloader.bin')
     with open(path_14k, 'wb') as f:
         f.write(flash_14k)
-    print(f"Created: {path_14k} ({len(flash_14k)} bytes, 14 KB Flash Image)")
+    print(f"Created: {path_14k_ver} and {path_14k} ({len(flash_14k)} bytes, 14 KB Flash Image)")
     
     # 2. 16 KB Full Flash Image (0x0000 to 0x3FFF = 16384 bytes)
     flash_16k = bytearray([0xFF] * 16384)
@@ -104,20 +111,26 @@ def main():
     for addr, val in mem.items():
         if addr < 16384:
             flash_16k[addr] = val
+    path_16k_ver = os.path.join(build_dir, f'ch552_hid_bootloader_{version_tag}_16k.bin')
+    with open(path_16k_ver, 'wb') as f:
+        f.write(flash_16k)
     path_16k = os.path.join(build_dir, 'ch552_hid_bootloader_16k.bin')
     with open(path_16k, 'wb') as f:
         f.write(flash_16k)
-    print(f"Created: {path_16k} ({len(flash_16k)} bytes, 16 KB Full Image)")
+    print(f"Created: {path_16k_ver} and {path_16k} ({len(flash_16k)} bytes, 16 KB Full Image)")
     
     # 3. Bootloader Partition Only (0x2C00 to 0x37FF = 3072 bytes)
     boot_part = bytearray([0xFF] * 3072)
     for addr, val in mem.items():
         if 0x2C00 <= addr < 0x3800:
             boot_part[addr - 0x2C00] = val
+    path_boot_ver = os.path.join(build_dir, f'ch552_hid_bootloader_{version_tag}_offset_0x2c00.bin')
+    with open(path_boot_ver, 'wb') as f:
+        f.write(boot_part)
     path_boot = os.path.join(build_dir, 'ch552_hid_bootloader_offset_0x2c00.bin')
     with open(path_boot, 'wb') as f:
         f.write(boot_part)
-    print(f"Created: {path_boot} ({len(boot_part)} bytes, 3 KB Partition Image)")
+    print(f"Created: {path_boot_ver} and {path_boot} ({len(boot_part)} bytes, 3 KB Partition Image)")
     
     # 4. Packed Bootloader (only occupied bytes starting at 0x2C00)
     packed_len = max_addr - 0x2C00 + 1
@@ -125,10 +138,13 @@ def main():
     for addr, val in mem.items():
         if addr >= 0x2C00:
             boot_packed[addr - 0x2C00] = val
+    path_packed_ver = os.path.join(build_dir, f'ch552_hid_bootloader_{version_tag}_packed.bin')
+    with open(path_packed_ver, 'wb') as f:
+        f.write(boot_packed)
     path_packed = os.path.join(build_dir, 'ch552_hid_bootloader_packed.bin')
     with open(path_packed, 'wb') as f:
         f.write(boot_packed)
-    print(f"Created: {path_packed} ({len(boot_packed)} bytes, Packed Image)")
+    print(f"Created: {path_packed_ver} and {path_packed} ({len(boot_packed)} bytes, Packed Image)")
 
 if __name__ == '__main__':
     main()
