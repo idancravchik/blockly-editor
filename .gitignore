@@ -54,6 +54,23 @@ desktop.ini
 # Android & Gradle
 .gradle/
 **/build/
+!HIDUploader/firmware/build/
+!HIDUploader/firmware/build/*.hex
+!HIDUploader/firmware/build/*.bin
+!HIDUploader/firmware/build/*.ihx
+!HIDUploader/firmware/demos/**/build/
+!HIDUploader/firmware/demos/**/build/*.hex
+!HIDUploader/firmware/demos/**/build/*.bin
+
+# Ignore SDCC compiler intermediate listings in firmware build
+HIDUploader/firmware/build/*.asm
+HIDUploader/firmware/build/*.lst
+HIDUploader/firmware/build/*.rel
+HIDUploader/firmware/build/*.rst
+HIDUploader/firmware/build/*.sym
+HIDUploader/firmware/build/*.lk
+HIDUploader/firmware/build/*.map
+HIDUploader/firmware/build/*.mem
 local.properties
 *.iml
 *.apk
