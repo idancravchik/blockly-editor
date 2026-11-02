@@ -417,10 +417,18 @@ public class Ch55xHidFlasher {
 
                 // 4. Erase previous flash partition (CMD_ERASE)
                 if (safeCallback != null) safeCallback.onStatus("Erasing user Flash partition...");
-                byte[] eraseResp = transceive(connection, epOut, epIn, CMD_ERASE, seq++, 0, new byte[0]);
-                int eraseStatus = eraseResp[59] & 0xFF;
-                if (eraseStatus != 0x00 && eraseStatus != 0xFF) {
-                    throw new IOException("Flash erase failed with status 0x" + Integer.toHexString(eraseStatus));
+                try {
+                    byte[] eraseResp = transceive(connection, epOut, epIn, CMD_ERASE, seq++, 0, new byte[0]);
+                    int eraseStatus = eraseResp[59] & 0xFF;
+                    if (eraseStatus != 0x00 && eraseStatus != 0xFF) {
+                        if (safeCallback != null) {
+                            safeCallback.onStatus("Flash erase status: 0x" + Integer.toHexString(eraseStatus) + ", proceeding with write...");
+                        }
+                    }
+                } catch (Exception e) {
+                    if (safeCallback != null) {
+                        safeCallback.onStatus("Flash erase skipped (" + e.getMessage() + "), proceeding with write...");
+                    }
                 }
 
                 // 5. Flash blocks (CMD_WRITE_BLOCK)

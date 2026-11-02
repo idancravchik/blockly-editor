@@ -1,6 +1,6 @@
 param (
-    [string]$IhxPath = "build/ch552_hid_bootloader_v2.1.ihx",
-    [string]$BaseName = "ch552_hid_bootloader_v2.1"
+    [string]$IhxPath = "build/ch552_hid_bootloader_v2.2.ihx",
+    [string]$BaseName = "ch552_hid_bootloader_v2.2"
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

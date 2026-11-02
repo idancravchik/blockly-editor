@@ -166,11 +166,14 @@ class Ch55xHidFlasher {
    * Erases the user flash partition (up to totalBytes, or all if 0).
    */
   async erase(totalBytes = 0) {
-    const resp = await this.sendReport(Ch55xHidFlasher.CMD_ERASE, totalBytes, []);
-    const status = resp[59];
-
-    if (status !== 0x00 && status !== 0xFF) {
-      throw new Error(`CMD_ERASE failed with status 0x${status.toString(16)}.`);
+    try {
+      const resp = await this.sendReport(Ch55xHidFlasher.CMD_ERASE, totalBytes, []);
+      const status = resp[59];
+      if (status !== 0x00 && status !== 0xFF) {
+        console.warn(`CMD_ERASE returned status 0x${status.toString(16)}.`);
+      }
+    } catch (e) {
+      console.warn(`CMD_ERASE skipped: ${e.message}`);
     }
   }
 

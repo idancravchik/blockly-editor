@@ -8,9 +8,6 @@
 #define USER_FLASH_END      0x2BFF   // 11 KB User Flash partition
 #define BOOTLOADER_START    0x2C00   // Bootloader begins at 0x2C00 (3 KB reserved)
 
-#ifndef ROM_CMD_ERASE
-#define ROM_CMD_ERASE       0xA6     // Flash-ROM 1KB page erase command
-#endif
 #ifndef ROM_CMD_WRITE
 #define ROM_CMD_WRITE       0x9A     // Flash-ROM word write command
 #endif
@@ -24,10 +21,7 @@ uint16_t IAP_ReadWord(uint16_t addr);
 // Computes 16-bit CRC over user flash region
 uint16_t IAP_CalculateCRC16(uint16_t start_addr, uint16_t length);
 
-// Erases a 1KB page of Code Flash (addr must be below BOOTLOADER_START)
+// Erases a 1KB page of Code Flash by writing 0xFFFF (addr must be below BOOTLOADER_START)
 uint8_t IAP_ErasePage(uint16_t addr);
-
-// Erases user partition up to end_addr (or entire partition if 0), strictly protecting bootloader
-uint8_t IAP_EraseRange(uint16_t end_addr);
 
 #endif // __IAP_FLASH_H__

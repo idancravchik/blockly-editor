@@ -77,7 +77,7 @@ def main():
     mem_with_vector[0x0001] = 0x2C
     mem_with_vector[0x0002] = 0x00
     
-    version_tag = "v2.1"
+    version_tag = "v2.2"
     
     # 0. Pure ASCII Intel HEX (with reset vector)
     path_hex_ver = os.path.join(build_dir, f'ch552_hid_bootloader_{version_tag}.hex')
