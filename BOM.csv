@@ -1,0 +1,13 @@
+Designator,Description,Value,Quantity,Footprint,Manufacturer,Manufacturer Part,Supplier,Supplier Part,Unit Price (USD),Link
+U1,Microcontroller (8051 USB MCU),CH552G,1,SOP-16,WCH,CH552G,LCSC,C111292,$0.38,https://www.lcsc.com/product-detail/C111292.html
+USB1,USB Type-C 16-Pin Receptacle,TYPE-C 16P,1,SMD-16P,SHOU HAN,TYPE-C-16P-QTWT,LCSC,C5187472,$0.14,https://www.lcsc.com/product-detail/C5187472.html
+U3,Port 1 JST-PH 2.0mm 4-Pin Right Angle,S4B-PH-K-S,1,CONN-TH_4P,JST,S4B-PH-K-S(LF)(SN),LCSC,C157926,$0.10,https://www.lcsc.com/product-detail/C157926.html
+U4,Port 2 JST-PH 2.0mm 4-Pin Right Angle,S4B-PH-K-S,1,CONN-TH_4P,JST,S4B-PH-K-S(LF)(SN),LCSC,C157926,$0.10,https://www.lcsc.com/product-detail/C157926.html
+SW3,Tactile Push Button (Reset/Boot),TS-1187A,1,SMD-4P,XKB,TS-1187A-B-A-B,LCSC,C318884,$0.04,https://www.lcsc.com/product-detail/C318884.html
+C1,Decoupling Capacitor,100nF,1,0603,Yageo,CC0603KRX7R9BB104,LCSC,C14663,$0.01,https://www.lcsc.com/product-detail/C14663.html
+C2,Decoupling Capacitor,100nF,1,0603,Yageo,CC0603KRX7R9BB104,LCSC,C14663,$0.01,https://www.lcsc.com/product-detail/C14663.html
+R3,Pull-up Resistor,10kΩ,1,0603,Yageo,RC0603FR-0710KL,LCSC,C98220,$0.01,https://www.lcsc.com/product-detail/C98220.html
+R4,USB-C CC1 Pull-down Resistor,5.1kΩ,1,0603,Yageo,RT0603BRD075K1L,LCSC,C122969,$0.01,https://www.lcsc.com/product-detail/C122969.html
+R5,USB-C CC2 Pull-down Resistor,5.1kΩ,1,0603,Yageo,RT0603BRD075K1L,LCSC,C122969,$0.01,https://www.lcsc.com/product-detail/C122969.html
+PCB,Custom 2-Layer FR-4 PCB (30x45mm),Custom,1,30x45mm,JLCPCB,Custom 2-Layer,JLCPCB,Custom,$0.40,https://jlcpcb.com
+Enclosure,3D Printed Sliding Case (PLA/PETG),Custom,1,3D Print,Self-Printed,3D Printed Enclosure,Self / JLCPCB,Custom,$0.50,https://jlcpcb.com/3d-printing
