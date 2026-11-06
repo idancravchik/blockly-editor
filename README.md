@@ -1,50 +1,52 @@
 # Devbox V1
 
-> **An ultra-low-cost, driverless physical computing kit and block programming platform powered by the WCH CH552G microcontroller.**
+> **This is an ultra low cost, driverless physical prpgramming kit and block programming platform powered with the WCH CH552G microcontroller.**
 
 ![Devbox V1 3D Assembly](docs/images/cad_assembly.png)
 
 ---
 
-## 📌 Project Overview
+**Devbox V1** will be an educational hardware board designed to make embedded programming and innvovation accessible, portable, and not frustrating for kids and teens.
 
-**Devbox V1** is an all-in-one educational hardware and software ecosystem designed to make learning physical computing accessible, portable, and completely frictionless.
+It has:
 
-It features:
-- **Custom Hardware:** A compact 30mm × 45mm custom PCB powered by the WCH CH552G 8051 USB microcontroller, housed in a custom 3D-printed snap/sliding enclosure.
-- **Keyed Expansion Ports:** Dual 4-pin JST-PH 2.0mm keyed connectors (Port 1 & Port 2) preventing reversed polarity and eliminating loose breadboard jumper wires.
-- **Zero-Driver WebHID Bootloader:** Custom-written C firmware running on the CH552 that flashes over standard USB HID. No Zadig, WinUSB, or vendor drivers are needed—works straight out of the box on school Chromebooks, Windows, Linux, and Android.
-- **Visual Block Programming:** A custom Blockly-based web workspace (`webBlocks`) that converts graphical logic blocks into C / Arduino code.
-- **Cloud Compilation Engine:** A stateless FastAPI backend (`API`) that runs `arduino-cli` with `CH55xDuino` to compile code on the fly and stream flashable binaries directly into the browser.
-
----
-
-## 💡 Why I Made Devbox V1
-
-Most beginner electronics platforms (Arduino Uno, ESP32, micro:bit) cost between $15 to $35+, and setting them up in classrooms or clubs is often frustrating. School laptops and Chromebooks frequently block serial driver installation (CH340/CP2102) and lack administrative permissions to configure COM ports or run native IDEs. Furthermore, delicate breadboards and messy jumper wires break constantly when transported.
-
-I built Devbox V1 to solve this:
-1. **Under $2 Total Bill of Materials:** The entire custom board costs less than $1.50 in components, making classroom sets affordable on any budget.
-2. **Zero-Driver Plug & Play:** By engineering a custom USB HID bootloader, users can plug the device into any modern web browser (WebHID) and flash it in under a second with zero drivers or native software installation.
-3. **Durable, Keyed Modularity:** Keyed JST-PH ports ensure students cannot plug sensors in backwards or short out power rails, protected inside a rugged 3D-printed enclosure.
+- **Custom Hardware:** A compact PCB powered by the WCH CH552G 8051 microcontroller, in a custom 3D printed snap enclosure.
+- **Sensor Ports:** Dual 4-pin JST-PH 2.0mm connectors (Port 1 & Port 2) without any loose breadboard jumper wires!
+- **HID Bootloader:** Custom C firmware running on the CH552 that flashes over standard USB HID. No frustrating drivers, or vendor drivers works straight out of the box on my school Chromebooks, and Android phones.
+- **Block Programming:** A custom Blockly workspace that turns graphical logic blocks into C code, just simple hebrew.
+- **Cloud Compilation:** An API) that runs `arduino-cli` with `CH55xDuino` to compile code without prblems for the kids using the app.
 
 ---
 
-## 📸 Project Pictures & Media
+## Why I Made Devbox V1
 
-### 1. Full 3D CAD Assembly & Enclosure
-The complete 3D CAD model showing the custom PCB seated inside the 3D-printed sliding case, with USB-C and expansion port cutouts:
+In my opinion, most beginner electronics (Arduino Uno, ESP32, micro:bit) cost between $15 to $35+, and setting them up in classrooms is often frustrating. a lot of my friends don't have computers and can only use their phone. School laptops block serial drivers i need to install for arduino and you need to configure COM ports or run complicatedIDEs for kids that even don't know english well. breadboards and messy jumper wires break constantly and its reall hard to work with it so i added grove connectors to my board.
 
-![Devbox V1 3D Model](docs/images/cad_assembly.png)
+I am trying to build Devbox V1 to solve this:
+
+1. **Most important - under 4ILS Total board cost:** The entire custom board costs less than $2 in components, making classroom sets affordable for everyone! i want to try it on larg classes and for a class of 40 its 160 dollars for a whole kit for every kid!
+2. **Plug & Play:** By making a custom USB HID bootloader, kids can plug the device into any phone and flash it in under a second with zero drivers or frustrations.
+3. **No connection issues:** JST-PH ports ensure students cannot plug sensors in backwards or short out power rails.
+
+---
+
+## 📸 Project Pictures & Hardware Renders
+
+### 1. 3D Model & Enclosure Assembly
+The complete 3D CAD model showing the custom PCB seated inside the 3D-printed sliding case, alongside a 3D board render with Hebrew silkscreen (*"לוח פיתוח לילדים גרסה 1.0"*):
+
+| 3D Enclosure Assembly | 3D Board Render |
+| :---: | :---: |
+| ![Devbox V1 3D Model](docs/images/cad_assembly.png) | ![Devbox V1 Board 3D Render](docs/images/board_3d_render.png) |
 
 *CAD files available in [`hardware/cad/board_enclosure.step`](hardware/cad/board_enclosure.step) (.STEP) and [`hardware/cad/board_enclosure.f3d`](hardware/cad/board_enclosure.f3d) (Fusion 360 source).*
 
 ---
 
-### 2. Custom PCB Design & Schematic
-The custom 30mm × 45mm 2-layer PCB designed in EasyEDA Pro, routing the CH552G MCU, decoupling capacitors, USB-C CC logic, and dual expansion headers:
+### 2. Main Controller Schematic & PCB Layout
+The custom 30mm × 45mm 2-layer PCB designed in EasyEDA Pro, routing the CH552G MCU, decoupling capacitors, USB-C CC logic, and dual expansion connectors:
 
-| Schematic | PCB Layout & Silkscreen |
+| CH552G Main Schematic | PCB Layout & Silkscreen |
 | :---: | :---: |
 | ![Schematic](docs/images/schematic.png) | ![PCB Layout](docs/images/pcb_layout.png) |
 
@@ -52,7 +54,16 @@ The custom 30mm × 45mm 2-layer PCB designed in EasyEDA Pro, routing the CH552G 
 
 ---
 
-### 3. Wiring & Pinout Architecture
+### 3. Modular Sensor Example (Temperature & Humidity Module)
+Devbox V1 features a dedicated ecosystem of companion sensor boards that connect over the 4-pin keyed JST-PH interface. Below is the custom Temperature & Humidity sensor module featuring thermal isolation routing and the SC7A20 accelerometer sensor schematic:
+
+| Sensor Module 3D Render | Sensor 2D Layout & Thermometer Silkscreen | Sensor Schematic Example |
+| :---: | :---: | :---: |
+| ![Sensor 3D Render](docs/images/sensor_3d_render.png) | ![Sensor 2D PCB](docs/images/sensor_pcb_layout.png) | ![Sensor Schematic](docs/images/sensor_schematic.png) |
+
+---
+
+### 4. Wiring & Expansion Pinout
 Devbox V1 routes microcontroller pins to two standardized 4-pin expansion connectors:
 
 ![Devbox V1 Wiring Diagram](docs/images/wiring_diagram.svg)
@@ -64,7 +75,7 @@ Devbox V1 routes microcontroller pins to two standardized 4-pin expansion connec
 
 ---
 
-### 3. Modular Peripherals & Visual Blocks
+### 5. Visual Blocks Programming
 The block interface allows drag-and-drop programming tailored specifically to Devbox V1's hardware modules:
 
 ![Modular Components](docs/images/modules_overview.png)
@@ -99,71 +110,23 @@ DevboxV1/
 
 ---
 
-## 🛠️ Bill of Materials (BOM) & Budget
+## 🛠️ Bill of Materials (BOM)
 
-The complete Bill of Materials encompasses the **core controller**, the **modular sensor ecosystem** (designed in EasyEDA Pro), **manufacturing tooling**, and **custom packaging** to ship complete kits.
+_All components are sourced for maximum cost efficiency through LCSC and JLCPCB:_
 
-*(See full machine-readable [`BOM.csv`](BOM.csv) in repository root with direct distributor part links)*
+| Item           | Designator | Description                              | Qty | Footprint  | Supplier   | Part Number                                                   | Unit Cost  | Link                                                      |
+| :------------- | :--------- | :--------------------------------------- | :-: | :--------- | :--------- | :------------------------------------------------------------ | :--------: | :-------------------------------------------------------- |
+| **MCU**        | U1         | WCH CH552G 8051 USB Microcontroller      |  1  | SOP-16     | LCSC       | [C111292](https://www.lcsc.com/product-detail/C111292.html)   |   $0.38    | [LCSC](https://www.lcsc.com/product-detail/C111292.html)  |
+| **USB**        | USB1       | USB Type-C 16-Pin Receptacle             |  1  | SMD-16P    | LCSC       | [C5187472](https://www.lcsc.com/product-detail/C5187472.html) |   $0.14    | [LCSC](https://www.lcsc.com/product-detail/C5187472.html) |
+| **Headers**    | U3, U4     | JST-PH 2.0mm 4-Pin Right Angle Connector |  2  | CONN-TH_4P | LCSC       | [C157926](https://www.lcsc.com/product-detail/C157926.html)   |   $0.10    | [LCSC](https://www.lcsc.com/product-detail/C157926.html)  |
+| **Button**     | SW3        | Tactile Push Button (Reset/Bootloader)   |  1  | SMD-4P     | LCSC       | [C318884](https://www.lcsc.com/product-detail/C318884.html)   |   $0.04    | [LCSC](https://www.lcsc.com/product-detail/C318884.html)  |
+| **Capacitors** | C1, C2     | 100nF 50V X7R Ceramic Capacitor          |  2  | 0603       | LCSC       | [C14663](https://www.lcsc.com/product-detail/C14663.html)     |   $0.01    | [LCSC](https://www.lcsc.com/product-detail/C14663.html)   |
+| **Resistor**   | R3         | 10kΩ 5% Pull-Up Resistor                 |  1  | 0603       | LCSC       | [C98220](https://www.lcsc.com/product-detail/C98220.html)     |   $0.01    | [LCSC](https://www.lcsc.com/product-detail/C98220.html)   |
+| **Resistors**  | R4, R5     | 5.1kΩ 1% Type-C CC Pull-Down Resistors   |  2  | 0603       | LCSC       | [C122969](https://www.lcsc.com/product-detail/C122969.html)   |   $0.01    | [LCSC](https://www.lcsc.com/product-detail/C122969.html)  |
+| **PCB**        | PCB        | Custom 2-Layer FR-4 (30mm × 45mm)        |  1  | 30x45mm    | JLCPCB     | Custom                                                        |   $0.40    | [JLCPCB](https://jlcpcb.com)                              |
+| **Enclosure**  | Case       | 3D Printed PETG/PLA Sliding Case (~25g)  |  1  | Custom 3D  | Self / Hub | Custom                                                        |   $0.50    | [3D Print](https://jlcpcb.com/3d-printing)                |
+| **TOTAL**      |            | **Complete Unit Cost**                   |     |            |            |                                                               | **~$1.60** |                                                           |
 
-### 1. Devbox V1 Core Controller Board (5 Boards Prototype Batch)
-| Component | Designator | Description | Qty | Supplier | Part # | Unit Price | Total |
-| :--- | :--- | :--- | :---: | :--- | :--- | :---: | :---: |
-| **MCU** | U1 | WCH CH552G 8051 USB MCU (SOP-16) | 5 | LCSC | [C111292](https://www.lcsc.com/product-detail/C111292.html) | $0.38 | $1.90 |
-| **USB-C Port** | USB1 | USB Type-C 16-Pin SMD Receptacle | 5 | LCSC | [C5187472](https://www.lcsc.com/product-detail/C5187472.html) | $0.14 | $0.70 |
-| **Expansion Ports** | U3, U4 | JST-PH 2.0mm 4-Pin Right Angle Header | 10 | LCSC | [C157926](https://www.lcsc.com/product-detail/C157926.html) | $0.10 | $1.00 |
-| **Reset Switch** | SW3 | 5.1×5.1mm SMD Tactile Push Button | 5 | LCSC | [C318884](https://www.lcsc.com/product-detail/C318884.html) | $0.04 | $0.20 |
-| **Capacitors** | C1, C2 | 100nF 50V X7R 0603 Ceramic Capacitor | 10 | LCSC | [C14663](https://www.lcsc.com/product-detail/C14663.html) | $0.01 | $0.10 |
-| **Pull-Up Resistor** | R3 | 10kΩ 5% 0603 Thick Film Resistor | 5 | LCSC | [C98220](https://www.lcsc.com/product-detail/C98220.html) | $0.01 | $0.05 |
-| **CC Resistors** | R4, R5 | 5.1kΩ 1% 0603 Type-C CC Pull-Down | 10 | LCSC | [C122969](https://www.lcsc.com/product-detail/C122969.html) | $0.01 | $0.10 |
-| **Bare PCB** | PCB | Custom 2-Layer FR-4 (30×45mm, 5 pcs) | 5 | JLCPCB | [Custom PCB](https://jlcpcb.com) | $0.40 | $2.00 |
-| **Subtotal (5 Core Boards)** | | | | | | | **$6.05** |
-
----
-
-### 2. Modular Sensor & Peripheral Ecosystem (from EasyEDA Schematics)
-| Module / Component | Designator | Description | Qty | Supplier | Part # | Unit Price | Total |
-| :--- | :--- | :--- | :---: | :--- | :--- | :---: | :---: |
-| **SHT40 Temp & Humidity** | U_SHT40 | Sensirion SHT40 Precision I2C Sensor IC | 5 | LCSC | [C54823945](https://www.lcsc.com/product-detail/C54823945.html) | $1.95 | $9.75 |
-| **AHT20 Temp & Humidity** | U_AHT20 | ASAIR AHT20 Standard I2C Temp & Humidity | 5 | LCSC | [C2757850](https://www.lcsc.com/product-detail/C2757850.html) | $0.85 | $4.25 |
-| **SC7A20 Accelerometer** | U_SC7A20 | Silan SC7A20HTR 3-Axis Motion Sensor | 5 | LCSC | [C19274408](https://www.lcsc.com/product-detail/C19274408.html) | $0.45 | $2.25 |
-| **ATGM336H GPS / GNSS** | U_GPS | Zhongke Micro BDS/GPS Navigation Module | 2 | LCSC | [C90770](https://www.lcsc.com/product-detail/C90770.html) | $3.20 | $6.40 |
-| **Piezo Buzzer** | BUZZER1 | MLT-8530 Electromagnetic SMD Buzzer | 5 | LCSC | [C94599](https://www.lcsc.com/product-detail/C94599.html) | $0.25 | $1.25 |
-| **Buzzer Driver Transistor** | Q1 | S8050 NPN Transistor (SOT-23) | 5 | LCSC | [C916390](https://www.lcsc.com/product-detail/C916390.html) | $0.02 | $0.10 |
-| **Flyback Diode** | D1 | 1N4148W High-Speed Diode (SOD-123) | 5 | LCSC | [C917030](https://www.lcsc.com/product-detail/C917030.html) | $0.02 | $0.10 |
-| **RGB NeoPixel LED** | LED1 | SK6812 5050 Addressable RGB LED | 10 | LCSC | [C2765348](https://www.lcsc.com/product-detail/C2765348.html) | $0.08 | $0.80 |
-| **Big Key Switch** | KEY1 | B3F-4055 12×12mm Tactile Button | 5 | LCSC | [C84931](https://www.lcsc.com/product-detail/C84931.html) | $0.15 | $0.75 |
-| **JST Sensor Headers** | CN_SENS | JST-PH 2.0mm 4-Pin Straight Male Header | 15 | LCSC | [C131334](https://www.lcsc.com/product-detail/C131334.html) | $0.08 | $1.20 |
-| **Sensor Breakout PCBs** | PCB_SENS | Panelized 2-Layer Sensor Breakout Batch | 5 | JLCPCB | [Custom Breakouts](https://jlcpcb.com) | $1.00 | $5.00 |
-| **Subtotal (Sensor Boards)** | | | | | | | **$31.85** |
+_(See full machine-readable [`BOM.csv`](BOM.csv) in repository root)_
 
 ---
-
-### 3. Assembly Tooling & Prototyping
-| Tool / Material | Description | Qty | Supplier | Unit Price | Total |
-| :--- | :--- | :---: | :--- | :---: | :---: |
-| **SMD Soldering Stencil** | Stainless steel electropolished frameless SMT stencil for solder paste application | 1 | [JLCPCB Stencil](https://jlcpcb.com/smt-stencil) | $7.00 | $7.00 |
-| **WCH-LinkE Programmer** | USB ISP / SWD debugger & programmer for flashing blank CH552 MCUs | 1 | [AliExpress / WCH](https://www.aliexpress.com/item/1005004815454659.html) | $4.80 | $4.80 |
-| **PETG 3D Printing Filament** | 1.75mm 1kg spool for printing durable, heat-resistant sliding enclosures | 1 | [Amazon](https://www.amazon.com/dp/B07PGZNM34) | $16.99 | $16.99 |
-| **Subtotal (Tooling)** | | | | | **$28.79** |
-
----
-
-### 4. Custom Packaging & Kit Fulfillment
-| Packaging Item | Description | Qty | Supplier | Unit Price | Total |
-| :--- | :--- | :---: | :--- | :---: | :---: |
-| **Custom Kraft Cardboard Boxes** | 50×50×100mm rigid folding kraft kit boxes (20-pack) | 1 pack | [Amazon](https://www.amazon.com/dp/B08M9J8V1G) | $14.50 | $14.50 |
-| **Anti-Static ESD Shielding Bags** | Translucent ESD ziplock protective bags for boards & sensors (50-pack) | 1 pack | [Amazon](https://www.amazon.com/dp/B07P7QG69N) | $7.99 | $7.99 |
-| **Custom Branding Stickers** | Die-cut vinyl logo stickers for enclosure & kit box branding (50-pack) | 1 pack | [StickerMule](https://www.stickermule.com/custom-stickers) | $9.00 | $9.00 |
-| **Subtotal (Packaging)** | | | | | **$31.49** |
-
----
-
-### 💰 Grand Total Budget
-$$\mathbf{\$6.05} \text{ (5 Controllers)} + \mathbf{\$31.85} \text{ (Sensors)} + \mathbf{\$28.79} \text{ (Tooling)} + \mathbf{\$31.49} \text{ (Packaging)} = \mathbf{\$98.18}$$
-
-*(A complete, self-contained educational classroom kit run under $100)*
-
----
-
-## 📜 License
-Devbox V1 hardware and firmware are open-source under the GNU General Public License v3.0 (see [LICENSE](LICENSE)).
