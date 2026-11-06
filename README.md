@@ -99,24 +99,69 @@ DevboxV1/
 
 ---
 
-## 🛠️ Bill of Materials (BOM)
+## 🛠️ Bill of Materials (BOM) & Budget
 
-*All components are sourced for maximum cost efficiency through LCSC and JLCPCB:*
+The complete Bill of Materials encompasses the **core controller**, the **modular sensor ecosystem** (designed in EasyEDA Pro), **manufacturing tooling**, and **custom packaging** to ship complete kits.
 
-| Item | Designator | Description | Qty | Footprint | Supplier | Part Number | Unit Cost | Link |
-| :--- | :--- | :--- | :---: | :--- | :--- | :--- | :---: | :--- |
-| **MCU** | U1 | WCH CH552G 8051 USB Microcontroller | 1 | SOP-16 | LCSC | [C111292](https://www.lcsc.com/product-detail/C111292.html) | $0.38 | [LCSC](https://www.lcsc.com/product-detail/C111292.html) |
-| **USB** | USB1 | USB Type-C 16-Pin Receptacle | 1 | SMD-16P | LCSC | [C5187472](https://www.lcsc.com/product-detail/C5187472.html) | $0.14 | [LCSC](https://www.lcsc.com/product-detail/C5187472.html) |
-| **Headers** | U3, U4 | JST-PH 2.0mm 4-Pin Right Angle Connector | 2 | CONN-TH_4P | LCSC | [C157926](https://www.lcsc.com/product-detail/C157926.html) | $0.10 | [LCSC](https://www.lcsc.com/product-detail/C157926.html) |
-| **Button** | SW3 | Tactile Push Button (Reset/Bootloader) | 1 | SMD-4P | LCSC | [C318884](https://www.lcsc.com/product-detail/C318884.html) | $0.04 | [LCSC](https://www.lcsc.com/product-detail/C318884.html) |
-| **Capacitors** | C1, C2 | 100nF 50V X7R Ceramic Capacitor | 2 | 0603 | LCSC | [C14663](https://www.lcsc.com/product-detail/C14663.html) | $0.01 | [LCSC](https://www.lcsc.com/product-detail/C14663.html) |
-| **Resistor** | R3 | 10kΩ 5% Pull-Up Resistor | 1 | 0603 | LCSC | [C98220](https://www.lcsc.com/product-detail/C98220.html) | $0.01 | [LCSC](https://www.lcsc.com/product-detail/C98220.html) |
-| **Resistors** | R4, R5 | 5.1kΩ 1% Type-C CC Pull-Down Resistors | 2 | 0603 | LCSC | [C122969](https://www.lcsc.com/product-detail/C122969.html) | $0.01 | [LCSC](https://www.lcsc.com/product-detail/C122969.html) |
-| **PCB** | PCB | Custom 2-Layer FR-4 (30mm × 45mm) | 1 | 30x45mm | JLCPCB | Custom | $0.40 | [JLCPCB](https://jlcpcb.com) |
-| **Enclosure** | Case | 3D Printed PETG/PLA Sliding Case (~25g) | 1 | Custom 3D | Self / Hub | Custom | $0.50 | [3D Print](https://jlcpcb.com/3d-printing) |
-| **TOTAL** | | **Complete Unit Cost** | | | | | **~$1.60** | |
+*(See full machine-readable [`BOM.csv`](BOM.csv) in repository root with direct distributor part links)*
 
-*(See full machine-readable [`BOM.csv`](BOM.csv) in repository root)*
+### 1. Devbox V1 Core Controller Board (5 Boards Prototype Batch)
+| Component | Designator | Description | Qty | Supplier | Part # | Unit Price | Total |
+| :--- | :--- | :--- | :---: | :--- | :--- | :---: | :---: |
+| **MCU** | U1 | WCH CH552G 8051 USB MCU (SOP-16) | 5 | LCSC | [C111292](https://www.lcsc.com/product-detail/C111292.html) | $0.38 | $1.90 |
+| **USB-C Port** | USB1 | USB Type-C 16-Pin SMD Receptacle | 5 | LCSC | [C5187472](https://www.lcsc.com/product-detail/C5187472.html) | $0.14 | $0.70 |
+| **Expansion Ports** | U3, U4 | JST-PH 2.0mm 4-Pin Right Angle Header | 10 | LCSC | [C157926](https://www.lcsc.com/product-detail/C157926.html) | $0.10 | $1.00 |
+| **Reset Switch** | SW3 | 5.1×5.1mm SMD Tactile Push Button | 5 | LCSC | [C318884](https://www.lcsc.com/product-detail/C318884.html) | $0.04 | $0.20 |
+| **Capacitors** | C1, C2 | 100nF 50V X7R 0603 Ceramic Capacitor | 10 | LCSC | [C14663](https://www.lcsc.com/product-detail/C14663.html) | $0.01 | $0.10 |
+| **Pull-Up Resistor** | R3 | 10kΩ 5% 0603 Thick Film Resistor | 5 | LCSC | [C98220](https://www.lcsc.com/product-detail/C98220.html) | $0.01 | $0.05 |
+| **CC Resistors** | R4, R5 | 5.1kΩ 1% 0603 Type-C CC Pull-Down | 10 | LCSC | [C122969](https://www.lcsc.com/product-detail/C122969.html) | $0.01 | $0.10 |
+| **Bare PCB** | PCB | Custom 2-Layer FR-4 (30×45mm, 5 pcs) | 5 | JLCPCB | [Custom PCB](https://jlcpcb.com) | $0.40 | $2.00 |
+| **Subtotal (5 Core Boards)** | | | | | | | **$6.05** |
+
+---
+
+### 2. Modular Sensor & Peripheral Ecosystem (from EasyEDA Schematics)
+| Module / Component | Designator | Description | Qty | Supplier | Part # | Unit Price | Total |
+| :--- | :--- | :--- | :---: | :--- | :--- | :---: | :---: |
+| **SHT40 Temp & Humidity** | U_SHT40 | Sensirion SHT40 Precision I2C Sensor IC | 5 | LCSC | [C54823945](https://www.lcsc.com/product-detail/C54823945.html) | $1.95 | $9.75 |
+| **AHT20 Temp & Humidity** | U_AHT20 | ASAIR AHT20 Standard I2C Temp & Humidity | 5 | LCSC | [C2757850](https://www.lcsc.com/product-detail/C2757850.html) | $0.85 | $4.25 |
+| **SC7A20 Accelerometer** | U_SC7A20 | Silan SC7A20HTR 3-Axis Motion Sensor | 5 | LCSC | [C19274408](https://www.lcsc.com/product-detail/C19274408.html) | $0.45 | $2.25 |
+| **ATGM336H GPS / GNSS** | U_GPS | Zhongke Micro BDS/GPS Navigation Module | 2 | LCSC | [C90770](https://www.lcsc.com/product-detail/C90770.html) | $3.20 | $6.40 |
+| **Piezo Buzzer** | BUZZER1 | MLT-8530 Electromagnetic SMD Buzzer | 5 | LCSC | [C94599](https://www.lcsc.com/product-detail/C94599.html) | $0.25 | $1.25 |
+| **Buzzer Driver Transistor** | Q1 | S8050 NPN Transistor (SOT-23) | 5 | LCSC | [C916390](https://www.lcsc.com/product-detail/C916390.html) | $0.02 | $0.10 |
+| **Flyback Diode** | D1 | 1N4148W High-Speed Diode (SOD-123) | 5 | LCSC | [C917030](https://www.lcsc.com/product-detail/C917030.html) | $0.02 | $0.10 |
+| **RGB NeoPixel LED** | LED1 | SK6812 5050 Addressable RGB LED | 10 | LCSC | [C2765348](https://www.lcsc.com/product-detail/C2765348.html) | $0.08 | $0.80 |
+| **Big Key Switch** | KEY1 | B3F-4055 12×12mm Tactile Button | 5 | LCSC | [C84931](https://www.lcsc.com/product-detail/C84931.html) | $0.15 | $0.75 |
+| **JST Sensor Headers** | CN_SENS | JST-PH 2.0mm 4-Pin Straight Male Header | 15 | LCSC | [C131334](https://www.lcsc.com/product-detail/C131334.html) | $0.08 | $1.20 |
+| **Sensor Breakout PCBs** | PCB_SENS | Panelized 2-Layer Sensor Breakout Batch | 5 | JLCPCB | [Custom Breakouts](https://jlcpcb.com) | $1.00 | $5.00 |
+| **Subtotal (Sensor Boards)** | | | | | | | **$31.85** |
+
+---
+
+### 3. Assembly Tooling & Prototyping
+| Tool / Material | Description | Qty | Supplier | Unit Price | Total |
+| :--- | :--- | :---: | :--- | :---: | :---: |
+| **SMD Soldering Stencil** | Stainless steel electropolished frameless SMT stencil for solder paste application | 1 | [JLCPCB Stencil](https://jlcpcb.com/smt-stencil) | $7.00 | $7.00 |
+| **WCH-LinkE Programmer** | USB ISP / SWD debugger & programmer for flashing blank CH552 MCUs | 1 | [AliExpress / WCH](https://www.aliexpress.com/item/1005004815454659.html) | $4.80 | $4.80 |
+| **PETG 3D Printing Filament** | 1.75mm 1kg spool for printing durable, heat-resistant sliding enclosures | 1 | [Amazon](https://www.amazon.com/dp/B07PGZNM34) | $16.99 | $16.99 |
+| **Subtotal (Tooling)** | | | | | **$28.79** |
+
+---
+
+### 4. Custom Packaging & Kit Fulfillment
+| Packaging Item | Description | Qty | Supplier | Unit Price | Total |
+| :--- | :--- | :---: | :--- | :---: | :---: |
+| **Custom Kraft Cardboard Boxes** | 50×50×100mm rigid folding kraft kit boxes (20-pack) | 1 pack | [Amazon](https://www.amazon.com/dp/B08M9J8V1G) | $14.50 | $14.50 |
+| **Anti-Static ESD Shielding Bags** | Translucent ESD ziplock protective bags for boards & sensors (50-pack) | 1 pack | [Amazon](https://www.amazon.com/dp/B07P7QG69N) | $7.99 | $7.99 |
+| **Custom Branding Stickers** | Die-cut vinyl logo stickers for enclosure & kit box branding (50-pack) | 1 pack | [StickerMule](https://www.stickermule.com/custom-stickers) | $9.00 | $9.00 |
+| **Subtotal (Packaging)** | | | | | **$31.49** |
+
+---
+
+### 💰 Grand Total Budget
+$$\mathbf{\$6.05} \text{ (5 Controllers)} + \mathbf{\$31.85} \text{ (Sensors)} + \mathbf{\$28.79} \text{ (Tooling)} + \mathbf{\$31.49} \text{ (Packaging)} = \mathbf{\$98.18}$$
+
+*(A complete, self-contained educational classroom kit run under $100)*
 
 ---
 
