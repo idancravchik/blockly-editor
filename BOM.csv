@@ -1,26 +1,28 @@
-Category,Item,Designator,Description,Quantity,Supplier,Supplier Part,Unit Price (USD),Ext Price (USD),Link
-Devbox V1 Controller,Microcontroller,U1,WCH CH552G 8051 USB MCU (SOP-16),5,LCSC,C111292,$0.38,$1.90,https://www.lcsc.com/product-detail/C111292.html
-Devbox V1 Controller,USB Receptacle,USB1,USB Type-C 16-Pin Receptacle (SMD),5,LCSC,C5187472,$0.14,$0.70,https://www.lcsc.com/product-detail/C5187472.html
-Devbox V1 Controller,Expansion Header,U3 U4,JST-PH 2.0mm 4-Pin Right Angle Header,10,LCSC,C157926,$0.10,$1.00,https://www.lcsc.com/product-detail/C157926.html
-Devbox V1 Controller,Push Button,SW3,Tactile Switch 5.1x5.1mm SMD (Reset/Boot),5,LCSC,C318884,$0.04,$0.20,https://www.lcsc.com/product-detail/C318884.html
-Devbox V1 Controller,Capacitor,C1 C2,100nF 50V X7R 0603 MLCC Decoupling,10,LCSC,C14663,$0.01,$0.10,https://www.lcsc.com/product-detail/C14663.html
-Devbox V1 Controller,Resistor,R3,10kΩ 5% 0603 Pull-Up Resistor,5,LCSC,C98220,$0.01,$0.05,https://www.lcsc.com/product-detail/C98220.html
-Devbox V1 Controller,Resistor,R4 R5,5.1kΩ 1% 0603 Type-C CC Pull-Down Resistor,10,LCSC,C122969,$0.01,$0.10,https://www.lcsc.com/product-detail/C122969.html
-Devbox V1 Controller,Bare PCB,PCB,Custom 2-Layer FR-4 (30x45mm 5-piece batch),5,JLCPCB,Custom PCB,$0.40,$2.00,https://jlcpcb.com
-Sensor & Peripheral Modules,Temp & Humidity Sensor,U_SHT40,Sensirion SHT40 Precision I2C Temp & Humidity,5,LCSC,C54823945,$1.95,$9.75,https://www.lcsc.com/product-detail/C54823945.html
-Sensor & Peripheral Modules,Temp & Humidity Sensor,U_AHT20,ASAIR AHT20 Standard I2C Temp & Humidity,5,LCSC,C2757850,$0.85,$4.25,https://www.lcsc.com/product-detail/C2757850.html
-Sensor & Peripheral Modules,Motion Accelerometer,U_SC7A20,Silan SC7A20HTR 3-Axis Accelerometer (I2C),5,LCSC,C19274408,$0.45,$2.25,https://www.lcsc.com/product-detail/C19274408.html
-Sensor & Peripheral Modules,GNSS GPS Module,U_GPS,Zhongke Micro ATGM336H-5N31 GPS/BDS Module,2,LCSC,C90770,$3.20,$6.40,https://www.lcsc.com/product-detail/C90770.html
-Sensor & Peripheral Modules,SMD Buzzer,BUZZER1,MLT-8530 Electromagnetic Buzzer (3.6V 2.7kHz),5,LCSC,C94599,$0.25,$1.25,https://www.lcsc.com/product-detail/C94599.html
-Sensor & Peripheral Modules,NPN Transistor,Q1,S8050 NPN Transistor (Buzzer Driver SOT-23),5,LCSC,C916390,$0.02,$0.10,https://www.lcsc.com/product-detail/C916390.html
-Sensor & Peripheral Modules,Diode,D1,1N4148W High-Speed Switching Diode (SOD-123),5,LCSC,C917030,$0.02,$0.10,https://www.lcsc.com/product-detail/C917030.html
-Sensor & Peripheral Modules,Addressable LED,LED1,SK6812 5050 RGB Addressable NeoPixel,10,LCSC,C2765348,$0.08,$0.80,https://www.lcsc.com/product-detail/C2765348.html
-Sensor & Peripheral Modules,Big Key Button,KEY1,B3F-4055 12x12mm Tactile Button Switch,5,LCSC,C84931,$0.15,$0.75,https://www.lcsc.com/product-detail/C84931.html
-Sensor & Peripheral Modules,Sensor Port Header,CN_SENS,JST-PH 2.0mm 4-Pin Straight Male Header,15,LCSC,C131334,$0.08,$1.20,https://www.lcsc.com/product-detail/C131334.html
-Sensor & Peripheral Modules,Sensor Breakout PCBs,PCB_SENS,Panelized 2-Layer Sensor Breakout Boards (Batch),5,JLCPCB,Custom Breakouts,$1.00,$5.00,https://jlcpcb.com
-Tooling & Prototyping,SMD Solder Stencil,STENCIL,Stainless Steel SMT Stencil (Frameless 280x380mm),1,JLCPCB,Custom Stencil,$7.00,$7.00,https://jlcpcb.com/smt-stencil
-Tooling & Prototyping,Chip Programmer,PROG,WCH-LinkE USB ISP/SWD Debugger & Programmer,1,AliExpress / WCH,WCH-LinkE,$4.80,$4.80,https://www.aliexpress.com/item/1005004815454659.html
-Tooling & Prototyping,3D Print Filament,FILAMENT,PETG 1.75mm 1kg Spool (For Sliding Enclosures),1,Amazon / Polymaker,PETG-1KG,$16.99,$16.99,https://www.amazon.com/dp/B07PGZNM34
-Custom Packaging,Cardboard Kit Boxes,BOX,Custom Kraft Folding Boxes (50x50x100mm 20-Pack),1,Amazon / Custom,BOX-50x100-20PK,$14.50,$14.50,https://www.amazon.com/dp/B08M9J8V1G
-Custom Packaging,ESD Shielding Bags,BAG,Anti-Static Ziplock Bags (Translucent ESD 50-Pack),1,Amazon,ESD-ZIP-50PK,$7.99,$7.99,https://www.amazon.com/dp/B07P7QG69N
-Custom Packaging,Branding & Stickers,STICKER,Custom Die-Cut Vinyl Logo Stickers (50-Pack),1,StickerMule,STICKER-50PK,$9.00,$9.00,https://www.stickermule.com/custom-stickers
+Part,Type,Quantity,Unit price (USD),Line total (USD),Link,Vendor,Funding,Notes,Designator,Description,Supplier Part
+Microcontroller,Part,5,0.38,1.90,https://www.lcsc.com/product-detail/C111292.html,LCSC,Grant,,U1,WCH CH552G 8051 USB MCU (SOP-16),C111292
+USB Receptacle,Part,5,0.14,0.70,https://www.lcsc.com/product-detail/C5187472.html,LCSC,Grant,,USB1,USB Type-C 16-Pin Receptacle (SMD),C5187472
+Expansion Header,Part,10,0.10,1.00,https://www.lcsc.com/product-detail/C157926.html,LCSC,Grant,,U3 U4,JST-PH 2.0mm 4-Pin Right Angle Header,C157926
+Push Button,Part,5,0.04,0.20,https://www.lcsc.com/product-detail/C318884.html,LCSC,Grant,,SW3,Tactile Switch 5.1x5.1mm SMD (Reset/Boot),C318884
+Capacitor,Part,10,0.01,0.10,https://www.lcsc.com/product-detail/C14663.html,LCSC,Grant,,C1 C2,100nF 50V X7R 0603 MLCC Decoupling,C14663
+Resistor,Part,5,0.01,0.05,https://www.lcsc.com/product-detail/C98220.html,LCSC,Grant,,R3,10kΩ 5% 0603 Pull-Up Resistor,C98220
+Resistor,Part,10,0.01,0.10,https://www.lcsc.com/product-detail/C122969.html,LCSC,Grant,,R4 R5,5.1kΩ 1% 0603 Type-C CC Pull-Down Resistor,C122969
+Bare PCB,PCB,10,1.20,12.00,https://jlcpcb.com,JLCPCB,Grant,,PCB,Custom 2-Layer FR-4 (30x45mm 5-piece batch),Custom PCB
+Temp & Humidity Sensor,Part,5,1.95,9.75,https://www.lcsc.com/product-detail/C54823945.html,LCSC,Grant,,U_SHT40,Sensirion SHT40 Precision I2C Temp & Humidity,C54823945
+Temp & Humidity Sensor,Part,5,0.85,4.25,https://www.lcsc.com/product-detail/C2757850.html,LCSC,Grant,,U_AHT20,ASAIR AHT20 Standard I2C Temp & Humidity,C2757850
+Motion Accelerometer,Part,5,0.45,2.25,https://www.lcsc.com/product-detail/C19274408.html,LCSC,Grant,,U_SC7A20,Silan SC7A20HTR 3-Axis Accelerometer (I2C),C19274408
+SMD Buzzer,Part,5,0.25,1.25,https://www.lcsc.com/product-detail/C94599.html,LCSC,Grant,,BUZZER1,MLT-8530 Electromagnetic Buzzer (3.6V 2.7kHz),C94599
+NPN Transistor,Part,5,0.02,0.10,https://www.lcsc.com/product-detail/C916390.html,LCSC,Grant,,Q1,S8050 NPN Transistor (Buzzer Driver SOT-23),C916390
+Diode,Part,5,0.02,0.10,https://www.lcsc.com/product-detail/C917030.html,LCSC,Grant,,D1,1N4148W High-Speed Switching Diode (SOD-123),C917030
+Addressable LED,Part,10,0.08,0.80,https://www.lcsc.com/product-detail/C2765348.html,LCSC,Grant,,LED1,SK6812 5050 RGB Addressable NeoPixel,C2765348
+Big Key Button,Part,5,0.15,0.75,https://www.lcsc.com/product-detail/C84931.html,LCSC,Grant,,KEY1,B3F-4055 12x12mm Tactile Button Switch,C84931
+Sensor Port Header,Part,15,0.08,1.20,https://www.lcsc.com/product-detail/C131334.html,LCSC,Grant,,CN_SENS,JST-PH 2.0mm 4-Pin Straight Male Header,C131334
+Sensor Breakout PCBs,PCB,5,1.00,5.00,https://jlcpcb.com,JLCPCB,Grant,,PCB_SENS,Panelized 2-Layer Sensor Breakout Boards (Batch),Custom Breakouts
+SMD Solder Stencil,Part,1,7.00,7.00,https://jlcpcb.com/smt-stencil,JLCPCB,Grant,,STENCIL,Stainless Steel SMT Stencil (Frameless 280x380mm),Custom Stencil
+Chip Programmer,Part,1,5.80,5.80,https://www.aliexpress.com/item/1005004815454659.html,AliExpress / WCH,Grant,,PROG,WCH-LinkE USB ISP/SWD Debugger & Programmer,WCH-LinkE
+3D Print Filament,3D printed,1,16.99,16.99,https://www.amazon.com/dp/B07PGZNM34,Amazon / Polymaker,Grant,,FILAMENT,PETG 1.75mm 1kg Spool (For Sliding Enclosures),PETG-1KG
+Cardboard Kit Boxes,Part,1,14.50,14.50,https://www.amazon.com/dp/B08M9J8V1G,Amazon / Custom,Grant,,BOX,Custom Kraft Folding Boxes (50x50x100mm 20-Pack),BOX-50x100-20PK
+ESD Shielding Bags,Part,1,7.99,7.99,https://www.amazon.com/dp/B07P7QG69N,Amazon,Grant,,BAG,Anti-Static Ziplock Bags (Translucent ESD 50-Pack),ESD-ZIP-50PK
+shipping to israel,Shipping,1,37.00,37.00,,lcsc,Grant,shipping,,,
+israel wireless import,Tax or fee,1,32.00,32.00,,,Grant,esp32 import approve,,,
+pcb shipping,Shipping,1,28.40,28.40,,,Grant,,,,
+Total,,,,191.18,,,,,,,
