@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.devbox.ch55x"
+    namespace = "com.flashingservice"
     compileSdk = 34
 
     defaultConfig {

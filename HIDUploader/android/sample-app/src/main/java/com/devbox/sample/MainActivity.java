@@ -9,8 +9,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.devbox.ch55x.Ch55xHidFlasher;
-import com.devbox.ch55x.FlasherCallback;
+import com.flashingservice.Ch55xHidFlasher;
+import com.flashingservice.FlasherCallback;
 
 public class MainActivity extends AppCompatActivity {
 

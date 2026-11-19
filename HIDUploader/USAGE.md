@@ -15,13 +15,13 @@ Choose either of the two easy methods below:
 ### Method 1: Direct File Drop-in (Fastest — 1 Minute)
 Simply copy the core Java files into your app:
 
-1. Copy the folder `com/devbox/ch55x` from:
+1. Copy the folder `com/flashingservice` from:
    ```text
-   android/ch55x-hid-flasher/src/main/java/com/devbox/ch55x/
+   android/FlashingService/src/main/java/com/flashingservice/
    ```
 2. Paste it into your Android project under:
    ```text
-   app/src/main/java/com/devbox/ch55x/
+   app/src/main/java/com/flashingservice/
    ```
 The 3 required files are:
 * `Ch55xHidFlasher.java` — The flasher engine and high-level API.
@@ -35,15 +35,15 @@ The 3 required files are:
 ### Method 2: Include as a Gradle Module
 If you prefer keeping the library as an isolated module:
 
-1. Copy the `android/ch55x-hid-flasher` directory into your Android project's root folder.
+1. Copy the `android/FlashingService` directory into your Android project's root folder.
 2. In your `settings.gradle` (or `settings.gradle.kts`):
    ```groovy
-   include ':ch55x-hid-flasher'
+   include ':FlashingService'
    ```
 3. In your `app/build.gradle` (or `app/build.gradle.kts`):
    ```groovy
    dependencies {
-       implementation project(':ch55x-hid-flasher')
+       implementation project(':FlashingService')
    }
    ```
 4. Click **Sync Project with Gradle Files**.
@@ -81,8 +81,8 @@ app/src/main/assets/firmware.hex
 Then in your `Activity` or `Fragment`, flash it with a single call to **`flashAsset()`**:
 
 ```java
-import com.devbox.ch55x.Ch55xHidFlasher;
-import com.devbox.ch55x.FlasherCallback;
+import com.flashingservice.Ch55xHidFlasher;
+import com.flashingservice.FlasherCallback;
 
 public class MainActivity extends AppCompatActivity {
 

@@ -18,7 +18,7 @@ This guide walks you through integrating the **CH552 USB HID Flasher** library i
 
 ## 1. Overview
 
-The `ch55x-hid-flasher` library communicates directly with the CH552 microcontroller using Android's native **USB Host API (`android.hardware.usb`)**.
+The `FlashingService` library communicates directly with the CH552 microcontroller using Android's native **USB Host API (`android.hardware.usb`)**.
 
 ### Why is this easy to work with?
 * **Zero custom drivers needed**: The bootloader runs as a standard **USB HID** device (the same class used by keyboards and mice), which Android supports natively on all versions.
@@ -34,15 +34,13 @@ You have two simple options. Choose whichever fits your project best:
 ### Option A: Direct File Copy (Recommended - 1 minute)
 The fastest and cleanest method is to copy the 3 Java source files directly into your app source tree:
 
-1. Copy the Java files from `android/ch55x-hid-flasher/src/main/java/com/devbox/ch55x/`:
+1. Copy the Java files from `android/FlashingService/src/main/java/com/flashingservice/`:
    * `Ch55xHidFlasher.java` — The main USB HID flashing engine.
-   * `Ch55xCompiler.java` — On-device C code compiler engine.
-   * `CompilerCallback.java` — Callback listener for compilation status and results.
    * `IntelHexParser.java` — Converts Intel `.hex` files into binary and computes the CRC16.
    * `FlasherCallback.java` — Interface for progress, status, success, and error events.
 2. Paste them into your app project under:
    ```text
-   app/src/main/java/com/devbox/ch55x/
+   app/src/main/java/com/flashingservice/
    ```
    *(Or change the package name at the top of each file to match your project's package).*
 
@@ -51,17 +49,17 @@ The fastest and cleanest method is to copy the 3 Java source files directly into
 ### Option B: Include as a Gradle Module
 If you prefer keeping the library as an isolated module:
 
-1. Copy the `android/ch55x-hid-flasher` folder into your Android project root.
+1. Copy the `android/FlashingService` folder into your Android project root.
 2. In your `settings.gradle` (or `settings.gradle.kts`), add:
    ```groovy
    // settings.gradle
-   include ':ch55x-hid-flasher'
+   include ':FlashingService'
    ```
 3. In your app module's `app/build.gradle` (or `app/build.gradle.kts`), add to dependencies:
    ```groovy
    // app/build.gradle
    dependencies {
-       implementation project(':ch55x-hid-flasher')
+       implementation project(':FlashingService')
    }
    ```
 4. Click **Sync Project with Gradle Files**.
@@ -252,8 +250,8 @@ void loop() {
 
 ---
 
-### 4.6 Writing Code with Pure SDCC (For On-Device Mobile Compilation)
-If you are compiling directly inside your Android app (or without Arduino IDE), you write **Pure SDCC C code**:
+### 4.6 Writing Code with Pure SDCC (Without Arduino IDE)
+If you are compiling without Arduino IDE, you can write **Pure SDCC C code**:
 
 * **Include Header**: `#include "ch552_sdcc.h"` (provided in `firmware/include/ch552_sdcc.h`).
 * **Entry Point**: Standard `void main(void)` with an infinite `while(1)` loop (instead of `setup()`/`loop()`).
@@ -338,41 +336,6 @@ public class FirmwarePresets {
 }
 ```
 
-### Method 3: Compile C Code Directly on the Phone (`Ch55xCompiler`)
-If the user enters C code directly in your Android app, use the bundled `Ch55xCompiler`:
-
-```java
-Ch55xCompiler compiler = new Ch55xCompiler(this);
-
-String myCode = 
-    "#include \"ch552_sdcc.h\"\n" +
-    "void main(void) {\n" +
-    "    PIN_MODE_OUTPUT(3, 4);\n" +
-    "    while(1) { P3_4 = !P3_4; delay_ms(250); }\n" +
-    "}";
-
-// Compile C code on-device into Intel HEX
-compiler.compile(myCode, new CompilerCallback() {
-    @Override
-    public void onStatus(String message) {
-        // e.g. "Running on-device SDCC compiler..."
-    }
-
-    @Override
-    public void onSuccess(String hexContent, String compileLog) {
-        // Received Intel HEX string! You can now pass it directly to flasher.flash(...)
-        flasher.flash(device, hexContent, flasherCallback);
-    }
-
-    @Override
-    public void onError(String errorMessage) {
-        // Syntax or link error (displays exact line number and compiler error)
-        Toast.makeText(context, "Compiler Error: " + errorMessage, Toast.LENGTH_LONG).show();
-    }
-});
-```
-
-*(You can also use `compiler.compileAndFlash(flasher, device, myCode, unifiedCallback)` to perform compilation and flashing in a single seamless call!)*
 
 ---
 
@@ -429,8 +392,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.devbox.ch55x.Ch55xHidFlasher;
-import com.devbox.ch55x.FlasherCallback;
+import com.flashingservice.Ch55xHidFlasher;
+import com.flashingservice.FlasherCallback;
 
 import java.io.BufferedReader;
 import java.io.IOException;

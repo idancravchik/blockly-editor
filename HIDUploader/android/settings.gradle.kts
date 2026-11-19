@@ -14,5 +14,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CH55xHidUploader"
-include(":ch55x-hid-flasher")
+include(":FlashingService")
 include(":sample-app")

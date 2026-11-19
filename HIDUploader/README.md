@@ -48,10 +48,10 @@ HIDUploader/
 │   └── manifest.json                  # PWA Manifest (installable on phone homescreen)
 │
 ├── android/                           # Android Native Library (Java) & Demo App
-│   ├── ch55x-hid-flasher/             # Reusable pure Java Android Library module
+│   ├── FlashingService/               # Reusable pure Java Android Library module
 │   │   ├── build.gradle.kts
 │   │   ├── AndroidManifest.xml
-│   │   └── src/main/java/com/devbox/ch55x/
+│   │   └── src/main/java/com/flashingservice/
 │   │       ├── Ch55xHidFlasher.java   # USB Host HID Flasher engine
 │   │       ├── IntelHexParser.java    # Native Intel HEX parser
 │   │       └── FlasherCallback.java   # Progress & completion listeners
@@ -184,7 +184,7 @@ You can add this flashing engine to any existing or new Android app written in *
 ### Step 1: Add the Library to Your Project
 
 #### Option A: Copy Java Files Directly (Fastest)
-Copy the following three files from `android/ch55x-hid-flasher/src/main/java/com/devbox/ch55x/` into your app's package (e.g. `app/src/main/java/your/package/name/`):
+Copy the following three files from `android/FlashingService/src/main/java/com/flashingservice/` into your app's package (e.g. `app/src/main/java/your/package/name/`):
 - `Ch55xHidFlasher.java`
 - `IntelHexParser.java`
 - `FlasherCallback.java`
@@ -192,13 +192,13 @@ Copy the following three files from `android/ch55x-hid-flasher/src/main/java/com
 #### Option B: Include as a Module
 In your `settings.gradle.kts` (or `settings.gradle`), add:
 ```kotlin
-include(":ch55x-hid-flasher")
-project(":ch55x-hid-flasher").projectDir = file("path/to/android/ch55x-hid-flasher")
+include(":FlashingService")
+project(":FlashingService").projectDir = file("path/to/android/FlashingService")
 ```
 In your app's `build.gradle` (or `build.gradle.kts`), add:
 ```kotlin
 dependencies {
-    implementation(project(":ch55x-hid-flasher"))
+    implementation(project(":FlashingService"))
 }
 ```
 
@@ -239,8 +239,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.devbox.ch55x.Ch55xHidFlasher;
-import com.devbox.ch55x.FlasherCallback;
+import com.flashingservice.Ch55xHidFlasher;
+import com.flashingservice.FlasherCallback;
 
 public class MyFlasherActivity extends AppCompatActivity {
 

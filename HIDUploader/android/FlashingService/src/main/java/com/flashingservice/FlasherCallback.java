@@ -1,4 +1,4 @@
-package com.devbox.ch55x;
+package com.flashingservice;
 
 /**
  * Callback listener for CH552 HID flashing progress and lifecycle events.

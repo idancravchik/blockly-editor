@@ -1,4 +1,4 @@
-package com.devbox.ch55x;
+package com.flashingservice;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -45,7 +45,7 @@ public class Ch55xHidFlasher {
 
     public static final int CHUNK_SIZE = 48;
     public static final int USB_TIMEOUT_MS = 2000;
-    private static final String ACTION_USB_PERMISSION = "com.devbox.ch55x.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "com.flashingservice.USB_PERMISSION";
 
     public interface PermissionCallback {
         void onPermissionResult(boolean granted);

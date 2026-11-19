@@ -1,4 +1,4 @@
-package com.devbox.ch55x;
+package com.flashingservice;
 
 import org.junit.Test;
 

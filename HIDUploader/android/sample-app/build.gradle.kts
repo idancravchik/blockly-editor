@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":ch55x-hid-flasher"))
+    implementation(project(":FlashingService"))
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
 }
