@@ -4,29 +4,25 @@
 #include <stdint.h>
 #include "ch552.h"
 
-#define HID_REPORT_SIZE     64
-#define VENDOR_ID           0x1209
-#define PRODUCT_ID          0xC55D
+// הגדרות לוח
+#define HID_REPORT_SIZE 64
+#define VENDOR_ID 0x1209
+#define PRODUCT_ID 0xC55D
 
-// Initializes the USB controller in Full-Speed HID Device mode
-void USB_Init(void);
+// קובץ לניהול התקשורת בין הלוח לטלפון
 
-// Polls the USB SIE hardware (no interrupts needed)
-void USB_Process(void);
+void USB_Init(void); // מפעיל את תקשות הHID
 
-// Returns 1 if a 64-byte OUT packet is ready to read from host
-uint8_t USB_Available(void);
+void USB_Process(void); // תהליכון USB
 
-// Returns pointer to the 64-byte received payload
-uint8_t *USB_GetRxBuffer(void);
+uint8_t USB_Available(void); // מחזיר טרו אם יש חבילה מוכנה לקריאה שהגיעה מהטלפון
 
-// Releases the RX buffer so the next packet can be received
-void USB_ReleaseRx(void);
+uint8_t *USB_GetRxBuffer(void); // מצביע לחבילה שהגיעה
 
-// Sends a 64-byte Input Report back to the host
-void USB_SendReport(const uint8_t *buf, uint8_t len);
+void USB_ReleaseRx(void); // מפנה את המחסנית של הקבלה כדי לקבל את החבילה הבאה
 
-// Shuts down USB hardware prior to jumping to application code
-void USB_Shutdown(void);
+void USB_SendReport(const uint8_t *buf, uint8_t len); // מחזיר תשובה ללוח
+
+void USB_Shutdown(void); // מנתק את התקשורת USB לפני שמתחילים את התכניית המרכזית
 
 #endif // __USB_HID_H__
